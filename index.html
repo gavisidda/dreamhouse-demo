@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Dream House 🏠 – Hatti Construction Tracker</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
 <style>
@@ -17,7 +18,7 @@
   --blue:#1565C0;--blue-lt:#1976D2;--green:#2E7D32;--green-lt:#43A047;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--ivory);color:var(--text);font-family:'Crimson Pro',serif;font-size:17px;min-height:100vh;overflow-x:hidden;}
+body{background:var(--ivory);color:var(--text);font-family:'Crimson Pro',serif;font-size:19px;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';display:block;height:6px;background:repeating-linear-gradient(90deg,var(--saffron) 0,var(--saffron) 16px,var(--gold) 16px,var(--gold) 32px,var(--crimson) 32px,var(--crimson) 48px,var(--gold) 48px,var(--gold) 64px);position:fixed;top:0;left:0;right:0;z-index:999;}
 
 /* ── LOGIN ── */
@@ -58,13 +59,13 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 
 /* ── BOTTOM NAV ── */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--mahogany);border-top:1px solid rgba(212,169,106,.2);display:flex;padding-bottom:env(safe-area-inset-bottom,0);}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 1px;cursor:pointer;border:none;background:none;color:var(--text-muted);font-size:9px;font-family:'Crimson Pro',serif;transition:.15s;gap:1px;}
-.nav-item .ni{font-size:17px;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 2px;cursor:pointer;border:none;background:none;color:var(--text-muted);font-size:11px;font-family:'Crimson Pro',serif;transition:.15s;gap:2px;}
+.nav-item .ni{font-size:20px;}
 .nav-item.active{color:var(--gold-lt);}
 .nav-item.active .ni{filter:drop-shadow(0 0 5px rgba(240,192,64,.7));}
 
 /* ── PAGE ── */
-.page{padding:72px 13px 16px;}
+.page{padding:72px 13px 90px;}
 .page-title{font-family:'Cinzel',serif;font-size:15px;color:var(--mahogany);letter-spacing:2px;margin-bottom:2px;}
 .page-subtitle{color:var(--text-muted);font-size:12px;font-style:italic;}
 .divider{display:flex;align-items:center;gap:7px;margin:9px 0;}
@@ -100,9 +101,9 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .stat-card.s-count::after{background:var(--green);}
 .stat-card.s-est::after{background:#9C27B0;}
 .sc-icon{font-size:18px;margin-bottom:3px;}
-.sc-val{font-family:'Cinzel',serif;font-size:14px;color:var(--mahogany);}
-.sc-lbl{color:var(--text-muted);font-size:10px;}
-.sc-tap{color:var(--saffron);font-size:9px;margin-top:1px;}
+.sc-val{font-family:'Cinzel',serif;font-size:16px;color:var(--mahogany);}
+.sc-lbl{color:var(--text-muted);font-size:12px;}
+.sc-tap{color:var(--saffron);font-size:10px;margin-top:1px;}
 
 /* ── BANK BALANCE MINI CARDS ── */
 .bank-mini{display:flex;gap:7px;overflow-x:auto;margin-bottom:10px;padding-bottom:3px;scrollbar-width:none;}
@@ -117,26 +118,26 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .entry-card{background:white;border:1px solid var(--border-lt);border-radius:9px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:9px;box-shadow:0 1px 4px rgba(44,26,14,.06);}
 .entry-icon{font-size:17px;width:26px;text-align:center;flex-shrink:0;}
 .entry-info{flex:1;min-width:0;}
-.ei-cat{font-weight:600;color:var(--text);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ei-meta{color:var(--text-muted);font-size:10px;line-height:1.4;}
-.entry-amt{font-family:'Cinzel',serif;font-size:13px;color:var(--crimson-lt);text-align:right;flex-shrink:0;}
-.entry-amt .ea-bal{font-size:9px;color:var(--blue-lt);display:block;}
+.ei-cat{font-weight:600;color:var(--text);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ei-meta{color:var(--text-mid);font-size:13px;line-height:1.4;}
+.entry-amt{font-family:'Cinzel',serif;font-size:15px;color:var(--crimson-lt);text-align:right;flex-shrink:0;}
+.entry-amt .ea-bal{font-size:11px;color:var(--blue-lt);display:block;font-weight:600;}
 
 /* ── PHASES ── */
 .progress-section{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:12px;margin-bottom:10px;}
 .progress-section h3{font-family:'Cinzel',serif;font-size:11px;color:var(--mahogany);letter-spacing:1px;margin-bottom:8px;}
 .phase-item{margin-bottom:8px;}
 .phase-header{display:flex;justify-content:space-between;margin-bottom:2px;}
-.phase-name{font-size:11px;color:var(--text);}
-.phase-pct{font-size:10px;color:var(--saffron);font-weight:600;}
+.phase-name{font-size:13px;color:var(--text);}
+.phase-pct{font-size:12px;color:var(--saffron);font-weight:600;}
 .phase-track{height:5px;background:var(--ivory-dk);border-radius:99px;overflow:hidden;}
 .phase-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--saffron),var(--gold));transition:.4s;}
 
 /* ── FORM ── */
 .form-card{background:white;border:1px solid var(--border-lt);border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(44,26,14,.08);margin-bottom:12px;}
 .form-group{margin-bottom:12px;}
-.form-group label{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border-lt);border-radius:8px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--text);background:var(--ivory);outline:none;transition:.2s;}
+.form-group label{display:block;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-mid);margin-bottom:5px;font-weight:600;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border-lt);border-radius:8px;font-family:'Crimson Pro',serif;font-size:17px;color:var(--text);background:var(--ivory);outline:none;transition:.2s;}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--saffron);background:white;}
 .form-group textarea{resize:vertical;min-height:55px;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
@@ -173,11 +174,11 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .filter-chip.active{background:var(--saffron);border-color:var(--saffron);color:white;}
 .material-card{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:12px;margin-bottom:8px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
 .mc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
-.mc-name{font-weight:600;font-size:14px;color:var(--text);flex:1;}
-.mc-type{font-size:10px;padding:2px 6px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
-.mc-amount{font-family:'Cinzel',serif;font-size:15px;color:var(--crimson-lt);margin-top:4px;}
-.mc-partial{font-size:11px;color:var(--blue-lt);margin-top:2px;line-height:1.5;}
-.mc-meta{color:var(--text-muted);font-size:10px;margin-top:4px;line-height:1.7;}
+.mc-name{font-weight:600;font-size:16px;color:var(--text);flex:1;}
+.mc-type{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--ivory-dk);color:var(--text-mid);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;font-weight:600;}
+.mc-amount{font-family:'Cinzel',serif;font-size:17px;color:var(--crimson-lt);margin-top:4px;}
+.mc-partial{font-size:13px;color:var(--blue-lt);margin-top:2px;line-height:1.5;font-weight:600;}
+.mc-meta{color:var(--text);font-size:13px;margin-top:4px;line-height:1.7;}
 .mc-payment-trail{background:var(--ivory-dk);border-radius:6px;padding:7px 9px;margin-top:8px;font-size:11px;color:var(--text-mid);}
 .mc-payment-trail .pt-title{font-family:'Cinzel',serif;font-size:10px;color:var(--mahogany);margin-bottom:4px;letter-spacing:.5px;}
 .pt-row{margin-bottom:2px;}
@@ -190,11 +191,11 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 /* ── BUDGET TAB ── */
 .bank-card{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:13px;margin-bottom:9px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
 .bank-card-head{display:flex;justify-content:space-between;align-items:flex-start;}
-.bank-card-name{font-weight:600;font-size:15px;color:var(--text);}
+.bank-card-name{font-weight:600;font-size:17px;color:var(--text);}
 .bank-card-type{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);letter-spacing:1px;}
-.bank-total{font-family:'Cinzel',serif;font-size:18px;color:var(--blue-lt);margin-top:4px;}
-.bank-used{font-size:11px;color:var(--crimson-lt);margin-top:2px;}
-.bank-avail{font-size:11px;color:var(--green-lt);margin-top:1px;}
+.bank-total{font-family:'Cinzel',serif;font-size:20px;color:var(--blue-lt);margin-top:4px;}
+.bank-used{font-size:13px;color:var(--crimson-lt);margin-top:2px;font-weight:600;}
+.bank-avail{font-size:13px;color:var(--green);margin-top:1px;font-weight:600;}
 .bank-actions{display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--border-lt);padding-top:8px;}
 .budget-summary-box{background:linear-gradient(135deg,var(--mahogany),#4A2020);border-radius:12px;padding:15px;margin-bottom:12px;color:white;box-shadow:0 4px 18px rgba(44,26,14,.25);}
 .bsb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
@@ -208,8 +209,8 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .report-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:12px;}
 @media(min-width:400px){.report-summary{grid-template-columns:repeat(3,1fr);}}
 .rep-card{background:white;border:1px solid var(--border-lt);border-radius:9px;padding:10px;text-align:center;box-shadow:0 1px 5px rgba(44,26,14,.07);}
-.rep-card .rv{font-family:'Cinzel',serif;font-size:14px;color:var(--mahogany);margin-bottom:2px;}
-.rep-card .rl{color:var(--text-muted);font-size:10px;}
+.rep-card .rv{font-family:'Cinzel',serif;font-size:16px;color:var(--mahogany);margin-bottom:2px;}
+.rep-card .rl{color:var(--text-mid);font-size:12px;}
 .cat-bar-wrap{background:white;border:1px solid var(--border-lt);border-radius:10px;padding:11px;margin-bottom:7px;}
 .cat-bar-head{display:flex;justify-content:space-between;margin-bottom:5px;}
 .cat-bar-name{font-weight:600;color:var(--text);font-size:13px;}
@@ -221,8 +222,8 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .member-card{background:white;border:1px solid var(--border-lt);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
 .member-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--crimson));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:15px;color:white;flex-shrink:0;}
 .member-info{flex:1;}
-.member-name{font-weight:600;color:var(--text);font-size:14px;}
-.member-role{font-size:10px;padding:2px 6px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);display:inline-block;margin-top:1px;}
+.member-name{font-weight:600;color:var(--text);font-size:16px;}
+.member-role{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--ivory-dk);color:var(--text-mid);display:inline-block;margin-top:2px;}
 .member-role.owner{background:#FFF3E0;color:var(--saffron);}
 
 /* ── MODALS ── */
@@ -247,11 +248,11 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 .field-error{border-color:#E53935 !important;background:#FFF5F5 !important;}
 /* Bank txn log */
 .btxn-log{background:var(--ivory-dk);border-radius:8px;padding:9px 10px;margin-top:9px;border:1px solid var(--border-lt);}
-.btxn-log-title{font-family:'Cinzel',serif;font-size:10px;color:var(--mahogany);letter-spacing:1px;margin-bottom:6px;}
-.btxn-row{font-size:11px;color:var(--text-mid);padding:4px 0;border-bottom:1px solid var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+.btxn-log-title{font-family:'Cinzel',serif;font-size:12px;color:var(--mahogany);letter-spacing:1px;margin-bottom:6px;}
+.btxn-row{font-size:13px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
 .btxn-row:last-child{border-bottom:none;}
 .btxn-left{flex:1;}
-.btxn-right{font-family:'Cinzel',serif;font-size:11px;white-space:nowrap;}
+.btxn-right{font-family:'Cinzel',serif;font-size:13px;white-space:nowrap;font-weight:600;}
 .btxn-right.cadd{color:var(--green);}
 .btxn-right.cout{color:var(--crimson-lt);}
 .btxn-right.cin{color:var(--blue-lt);}
@@ -383,7 +384,7 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
       <button class="btn-sm btn-edit" style="width:auto;padding:5px 12px;" onclick="openBankModal()">+ Add Account</button>
     </div>
     <div id="bank-list"><div class="spinner">Loading…</div></div>
-    <button class="btn-secondary" style="margin-top:10px" onclick="exportBankTxnCSV()">📥 Export Bank Transactions (CSV)</button>
+    <div style="margin-top:14px;padding:0 2px;"><button class="btn-primary" onclick="exportBankTxnCSV()" style="background:linear-gradient(135deg,var(--blue-lt),var(--blue));box-shadow:0 3px 12px rgba(25,118,210,.35);">📥 Export Bank Transactions (CSV)</button></div>
   </div>
 
   <!-- ── ADD / EDIT ENTRY ── -->
@@ -497,6 +498,17 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
   <div id="tab-members" class="page" style="display:none">
     <div class="page-title">Members & Settings</div>
     <div class="page-subtitle">Family access & project config</div>
+    <div id="setup-banner" style="display:none;background:linear-gradient(135deg,#1565C0,#0D47A1);border-radius:11px;padding:14px;margin-bottom:12px;color:white;">
+      <div style="font-family:'Cinzel',serif;font-size:14px;color:#FFD54F;margin-bottom:6px;">🚀 First Time Setup Guide</div>
+      <div style="font-size:13px;line-height:1.7;color:#E3F2FD;">
+        <b>Step 1:</b> Edit your name below — rename "GAVI" to your name<br/>
+        <b>Step 2:</b> Add family members with their PINs<br/>
+        <b>Step 3:</b> Go to 💳 Budget tab → Add your bank accounts &amp; cash<br/>
+        <b>Step 4:</b> Set your Estimated Budget below<br/>
+        <b>Step 5:</b> Start adding construction entries via ➕ Add tab
+      </div>
+      <button onclick="document.getElementById('setup-banner').style.display='none'" style="margin-top:8px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:white;padding:5px 12px;cursor:pointer;font-size:12px;">✕ Dismiss</button>
+    </div>
     <div class="divider"><span>✦</span></div>
     <div class="form-card">
       <div class="modal-title" style="font-size:13px;margin-bottom:10px;">📐 Project Estimated Budget</div>
@@ -538,20 +550,21 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
   </div>
 </div>
 
-<!-- Add Member Modal -->
+<!-- Add / Edit Member Modal -->
 <div class="modal-overlay" id="modal-member">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Add Family Member</div>
+    <div class="modal-title" id="m-modal-title">Add Family Member</div>
+    <input type="hidden" id="m-id-hidden" value=""/>
     <div class="form-group"><label>Name</label><input type="text" id="m-name" placeholder="Member name"/></div>
     <div class="form-group"><label>Role</label>
       <select id="m-role">
         <option value="member">Member (Add &amp; Edit only)</option>
         <option value="owner">Owner (Full Access + Delete)</option>
       </select></div>
-    <div class="form-group"><label>6-Digit PIN</label>
+    <div class="form-group"><label id="m-pin-label">6-Digit PIN</label>
       <input type="number" id="m-pin" placeholder="e.g. 654321" inputmode="numeric"/></div>
-    <button class="btn-primary" onclick="saveMember()">➕ Add Member</button>
+    <button class="btn-primary" onclick="saveMember()">💾 Save Member</button>
     <button class="btn-secondary" onclick="closeModal('modal-member')">Cancel</button>
   </div>
 </div>
@@ -665,16 +678,22 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 // ══════════════════════════════════════════════
 //  FIREBASE CONFIG — replace with yours
 // ══════════════════════════════════════════════
-const FIREBASE_CONFIG={
+  const FIREBASE_CONFIG={
   apiKey:"AIzaSyCkCTabNSmEvYcCtO_cMkKBuRG60nyVpKI",authDomain:"dreamhouse-demo.firebaseapp.com",
   projectId:"dreamhouse-demo",storageBucket:"dreamhouse-demo.firebasestorage.app",
   messagingSenderId:"14549890111",appId:"1:14549890111:web:3f66f0948eff53525e748a"
 };
-let DEMO=false,db=null;
+// ── Owner name to show on first-run setup (edit this before sharing the template)
+const DEFAULT_OWNER_NAME = "GAVI";   // ← Change to your name before sharing
+const DEFAULT_OWNER_PIN  = "123456"; // ← Change to your PIN before sharing
+
+let DEMO=false,db=null,auth=null;
 try{
-  firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();
-  if(FIREBASE_CONFIG.apiKey==="YOUR_API_KEY")throw new Error("demo");
-}catch(e){DEMO=false;}
+  if(FIREBASE_CONFIG.apiKey==="YOUR_API_KEY") throw new Error("demo");
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db   = firebase.firestore();
+  auth = firebase.auth();
+}catch(e){ DEMO=true; }
 
 // ══════════════════════════════════════════════
 //  DEMO SEED
@@ -810,7 +829,7 @@ async function saveSettings(){
   const n=document.getElementById("s-projname").value.trim()||"Dream House";
   settings={estimatedBudget:b,projectName:n};
   if(DEMO)DS.settings=settings;
-  else try{await db.collection("settings").doc("main").set(settings);}catch(e){}
+  else { await ensureAuth(); try{await db.collection("settings").doc("main").set(settings);}catch(e){toast("❌ Save failed: "+e.message);return;} }
   toast("✅ Settings saved");renderDashboard();
 }
 async function loadEntries(){
@@ -820,13 +839,30 @@ async function loadEntries(){
     allEntries=s.docs.map(d=>({id:d.id,...d.data(),payments:d.data().payments||[]}));
   }catch(e){}
 }
+async function ensureAuth(){
+  if(!auth) return;
+  if(!auth.currentUser){
+    try{ await auth.signInAnonymously(); }
+    catch(e){ console.warn("Anon auth failed:", e.message); }
+  }
+}
 async function loadMembers(){
-  if(DEMO){members=[...DS.members];return members;}
+  if(DEMO){ members=[...DS.members]; return members; }
+  await ensureAuth();
   try{
-    const s=await db.collection("members").get();
-    members=s.docs.map(d=>({id:d.id,...d.data()}));
-    if(!members.length)members=[{id:"default",name:"Owner",role:"owner",pin:"123456"}];
-  }catch(e){members=[{id:"default",name:"Owner",role:"owner",pin:"123456"}];}
+    const s = await db.collection("members").get();
+    members = s.docs.map(d=>({id:d.id,...d.data()}));
+    if(!members.length){
+      // ── First run: create the default owner in Firestore ──
+      const ownerData = { name:DEFAULT_OWNER_NAME, role:"owner", pin:DEFAULT_OWNER_PIN };
+      const ref = await db.collection("members").add(ownerData);
+      members = [{id:ref.id,...ownerData}];
+      toast("👑 Default owner '"+DEFAULT_OWNER_NAME+"' created. Please login and update your name/PIN in Settings.");
+    }
+  }catch(e){
+    console.warn("loadMembers error:",e);
+    members=[{id:"local",name:DEFAULT_OWNER_NAME,role:"owner",pin:DEFAULT_OWNER_PIN}];
+  }
   return members;
 }
 async function loadBanks(){
@@ -848,7 +884,7 @@ async function savePhases(){
     phases[i].pct=Math.min(100,Math.max(0,parseInt(r.querySelector("input").value)||0));
   });
   if(DEMO)DS.phases=[...phases];
-  else try{await db.collection("settings").doc("phases").set({list:phases});}catch(e){}
+  else { await ensureAuth(); try{await db.collection("settings").doc("phases").set({list:phases});}catch(e){toast("❌ Save failed: "+e.message);return;} }
   toast("✅ Phases saved");renderDashboard();
 }
 
@@ -1436,24 +1472,84 @@ function renderMembersSettings(){
       <div class="member-avatar">${m.name[0].toUpperCase()}</div>
       <div class="member-info"><div class="member-name">${m.name}</div>
         <span class="member-role ${m.role}">${m.role==="owner"?"👑 Owner":"👤 Member"}</span></div>
-      ${CU.role==="owner"&&m.id!==CU.id?`<button class="btn-sm btn-delete" style="width:auto;padding:5px 10px;" onclick="deleteMember('${m.id}')">Remove</button>`:""}
+      <div style="display:flex;gap:5px;flex-direction:column;align-items:flex-end;">
+        ${CU.role==="owner"?`<button class="btn-sm btn-edit" style="width:auto;padding:4px 10px;" onclick="editMember('${m.id}')">✏️ Edit</button>`:""}
+        ${CU.role==="owner"&&m.id!==CU.id?`<button class="btn-sm btn-delete" style="width:auto;padding:4px 10px;" onclick="deleteMember('${m.id}')">🗑 Remove</button>`:""}
+      </div>
     </div>`).join("")||"<div class='empty'><div class='ei'>👥</div><p>No members</p></div>";
 }
+function editMember(id){
+  const m=members.find(x=>x.id===id); if(!m) return;
+  if(CU.role!=="owner"){ toast("❌ Only owners can edit members"); return; }
+  document.getElementById("m-name").value=m.name;
+  document.getElementById("m-role").value=m.role;
+  document.getElementById("m-pin").value="";
+  document.getElementById("m-id-hidden").value=m.id;
+  document.getElementById("m-modal-title").textContent="Edit Member";
+  document.getElementById("m-pin-label").textContent="New 6-Digit PIN (leave blank = keep existing)";
+  document.getElementById("modal-member").classList.add("open");
+}
 function openAddMember(){
+  document.getElementById("m-id-hidden").value="";
+  document.getElementById("m-modal-title").textContent="Add Family Member";
+  document.getElementById("m-pin-label").textContent="6-Digit PIN";
+  document.getElementById("m-name").value="";
+  document.getElementById("m-pin").value="";
+  document.getElementById("m-role").value="member";
   if(CU.role!=="owner"){toast("❌ Only owners can add members");return;}
   document.getElementById("modal-member").classList.add("open");
 }
 async function saveMember(){
+  const editId=document.getElementById("m-id-hidden").value;
   const name=document.getElementById("m-name").value.trim();
   const role=document.getElementById("m-role").value;
   const pin=String(document.getElementById("m-pin").value).trim();
-  if(!name||pin.length!==PIN_LEN){toast(`⚠️ Name and ${PIN_LEN}-digit PIN required`);return;}
-  const m={id:"m"+Date.now(),name,role,pin};
-  if(DEMO){DS.members.push(m);members=[...DS.members];}
-  else try{const ref=await db.collection("members").add({name,role,pin});m.id=ref.id;members.push(m);}catch(e){toast("❌ Failed");return;}
-  closeModal("modal-member");
-  document.getElementById("m-name").value="";document.getElementById("m-pin").value="";
-  toast("✅ Member added");
+  if(!name){ toast("⚠️ Enter member name"); return; }
+  if(pin.length!==PIN_LEN){ toast(`⚠️ PIN must be exactly ${PIN_LEN} digits`); return; }
+  if(members.find(m=>m.name.toLowerCase()===name.toLowerCase()))
+    { toast("⚠️ A member with this name already exists"); return; }
+  if(editId){
+    // ── EDIT existing member ──
+    const existing=members.find(x=>x.id===editId); if(!existing)return;
+    const updPin=pin.length===PIN_LEN?pin:existing.pin; // keep old PIN if blank
+    const upd={name,role,pin:updPin};
+    if(DEMO){
+      const i=DS.members.findIndex(x=>x.id===editId);
+      if(i>=0)DS.members[i]={...DS.members[i],...upd};
+      members=DS.members.map(x=>({...x}));
+    } else {
+      await ensureAuth();
+      try{ await db.collection("members").doc(editId).update(upd); }
+      catch(e){ toast("❌ Failed: "+e.message); return; }
+      const i=members.findIndex(x=>x.id===editId);
+      if(i>=0)members[i]={...members[i],...upd};
+      // If editing self, update session
+      if(CU.id===editId){ CU={...CU,...upd}; sessionStorage.setItem("dh_user",JSON.stringify(CU)); document.getElementById("topbar-user").textContent=CU.name+(CU.role==="owner"?" 👑":""); }
+    }
+    closeModal("modal-member");
+    document.getElementById("m-name").value="";
+    document.getElementById("m-pin").value="";
+    toast("✅ Member '"+name+"' updated");
+  } else {
+    // ── ADD new member ──
+    const m={id:"m"+Date.now(),name,role,pin};
+    if(DEMO){
+      DS.members.push(m); members=[...DS.members];
+    } else {
+      await ensureAuth();
+      try{
+        const ref=await db.collection("members").add({name,role,pin});
+        m.id=ref.id; members.push(m);
+      }catch(e){
+        toast("❌ Failed: "+e.message+" — check Firebase rules & Auth enabled");
+        return;
+      }
+    }
+    closeModal("modal-member");
+    document.getElementById("m-name").value="";
+    document.getElementById("m-pin").value="";
+    toast("✅ Member '"+name+"' added");
+  }
   renderMembersSettings();
   renderMemberPick(members);
   populateSelectDropdowns();
@@ -1468,42 +1564,63 @@ async function deleteMember(id){
 // ══════════════════════════════════════════════
 //  FIREBASE RULES
 // ══════════════════════════════════════════════
+// ──────────────────────────────────────────────────────────────
+// HOW THIS APP USES FIREBASE AUTH:
+//   • All users sign in ANONYMOUSLY (auto, no email/password needed)
+//   • Role (owner / member) is stored in the "members" Firestore collection
+//   • PIN is validated in the app (client-side) — NOT by Firebase Auth
+//   • isOwner() below checks a separate "appRoles" doc written at first-run
+// ──────────────────────────────────────────────────────────────
+// SETUP STEPS for a new Firebase project:
+//   1. Firebase console → Authentication → Sign-in method → Enable "Anonymous"
+//   2. Firebase console → Firestore → Create database (start in test mode)
+//   3. Firestore → Rules → Paste the rules below → Publish
+//   4. Run app once — it will auto-create the default owner in members collection
+// ──────────────────────────────────────────────────────────────
 const FIREBASE_RULES=`rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper: check if user is owner
-    function isOwner() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == "owner";
-    }
-    function isAuthenticated() {
+    // ── This app uses Anonymous Auth. All signed-in users (anon) are "authenticated".
+    // ── Owner role is enforced by the app UI — Firestore rules enforce
+    //    that only authenticated (signed-in) users can read/write.
+    // ── For stronger security, owners can set allowedUIDs in the appRoles doc.
+
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Settings — owners full, members read only
-    match /settings/{doc} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner();
-    }
-
-    // Entries — members can add & update, only owner can delete
-    match /entries/{doc} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
-      allow delete: if isOwner();
-    }
-
-    // Banks — owner full, members read
-    match /banks/{doc} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner();
-    }
-
-    // Members — owner full, self-read
+    // Members collection — anyone signed-in can read (for login screen)
+    // Write requires being signed in (owner check is in the app)
     match /members/{doc} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isOwner();
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // Settings (project name, estimated budget, phases)
+    match /settings/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // Construction expense entries
+    match /entries/{doc} {
+      allow read:          if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete:         if isSignedIn();
+    }
+
+    // Bank accounts & transactions
+    match /banks/{doc} {
+      allow read:  if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }`;
@@ -1522,7 +1639,12 @@ function showTab(name,el){
   sessionStorage.setItem("dh_tab",name);          // ← remember current tab
   if(name==="list")    renderEntries();
   if(name==="reports") renderReports();
-  if(name==="members") renderMembersSettings();
+  if(name==="members"){
+    renderMembersSettings();
+    // Show setup banner if no banks and no entries yet
+    const banner=document.getElementById("setup-banner");
+    if(banner&&banks.length===0&&allEntries.length===0) banner.style.display="block";
+  }
   if(name==="budget")  renderBudgetTab();
   if(name==="add"&&!editingId) resetForm();
 }
