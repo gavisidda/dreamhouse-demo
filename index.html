@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dream House 🏠 – Hatti Construction Tracker</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --saffron:#E8680A;--gold:#C8941A;--gold-lt:#F0C040;
+  --ivory:#FDF6E8;--ivory-dk:#F5EDD4;
+  --mahogany:#2C1A0E;--crimson:#8B1A1A;--crimson-lt:#B22222;
+  --text:#1C0D05;--text-mid:#5A3A1A;--text-muted:#9B7B5A;
+  --border:#D4A96A;--border-lt:#E8CFA0;
+  --blue:#1565C0;--blue-lt:#1976D2;--green:#2E7D32;--green-lt:#43A047;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--ivory);color:var(--text);font-family:'Crimson Pro',serif;font-size:17px;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';display:block;height:6px;background:repeating-linear-gradient(90deg,var(--saffron) 0,var(--saffron) 16px,var(--gold) 16px,var(--gold) 32px,var(--crimson) 32px,var(--crimson) 48px,var(--gold) 48px,var(--gold) 64px);position:fixed;top:0;left:0;right:0;z-index:999;}
+
+/* ── LOGIN ── */
+#screen-login{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 20%,#3D2515,#2C1A0E);padding:20px;}
+.login-temple{text-align:center;margin-bottom:20px;}
+.kalash{font-size:50px;display:block;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.login-temple h1{font-family:'Cinzel',serif;color:var(--gold-lt);font-size:22px;letter-spacing:3px;text-shadow:0 2px 12px rgba(200,148,26,.5);}
+.login-temple p{color:var(--border-lt);font-size:13px;margin-top:4px;font-style:italic;}
+.login-card{background:rgba(253,246,232,.08);border:1px solid rgba(212,169,106,.3);border-radius:16px;padding:22px 20px;width:100%;max-width:340px;backdrop-filter:blur(8px);}
+.lc-label{display:block;color:var(--border-lt);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;margin-top:14px;}
+/* Member cards on login */
+.member-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.mpick-card{background:rgba(253,246,232,.08);border:1.5px solid rgba(212,169,106,.3);border-radius:10px;padding:8px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px;color:var(--gold-lt);font-size:14px;}
+.mpick-card:hover,.mpick-card.sel{background:rgba(240,192,64,.15);border-color:var(--gold-lt);}
+.mpick-card .mav{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--crimson));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:12px;color:white;flex-shrink:0;}
+.mpick-name{font-family:'Cinzel',serif;font-size:13px;}
+.mpick-role{font-size:10px;color:var(--border-lt);}
+/* PIN */
+.pin-dots{display:flex;gap:7px;justify-content:center;margin:10px 0 4px;}
+.pin-dot{width:12px;height:12px;border-radius:50%;background:rgba(212,169,106,.25);border:2px solid var(--gold);transition:.2s;}
+.pin-dot.filled{background:var(--gold-lt);box-shadow:0 0 5px rgba(240,192,64,.5);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0;}
+.pin-btn{background:rgba(253,246,232,.08);border:1px solid rgba(212,169,106,.3);border-radius:9px;padding:12px;color:var(--gold-lt);font-family:'Cinzel',serif;font-size:20px;cursor:pointer;transition:.15s;text-align:center;}
+.pin-btn:active{background:rgba(200,148,26,.25);transform:scale(.95);}
+.pin-btn.danger{color:#FF8080;}
+.btn-login{width:100%;padding:13px;background:linear-gradient(135deg,var(--saffron),var(--crimson-lt));border:none;border-radius:10px;color:white;font-family:'Cinzel',serif;font-size:14px;letter-spacing:2px;cursor:pointer;margin-top:4px;transition:.2s;box-shadow:0 4px 14px rgba(232,104,10,.4);}
+.btn-login:hover{transform:translateY(-2px);}
+.login-error{color:#FF8080;text-align:center;font-size:12px;margin-top:8px;min-height:16px;}
+.demo-hint{color:rgba(240,192,64,.5);text-align:center;font-size:11px;margin-top:7px;line-height:1.5;}
+
+/* ── TOP BAR ── */
+.topbar{position:fixed;top:6px;left:0;right:0;z-index:900;background:var(--mahogany);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 14px rgba(44,26,14,.5);}
+.topbar-title{font-family:'Cinzel',serif;color:var(--gold-lt);font-size:13px;letter-spacing:2px;}
+.topbar-right{display:flex;align-items:center;gap:7px;}
+.topbar-user{color:var(--border-lt);font-size:12px;}
+.topbar-logout{background:none;border:1px solid rgba(212,169,106,.35);border-radius:5px;padding:3px 8px;color:var(--text-muted);font-size:11px;cursor:pointer;}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:900;background:var(--mahogany);border-top:1px solid rgba(212,169,106,.2);display:flex;padding-bottom:env(safe-area-inset-bottom,0);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 1px;cursor:pointer;border:none;background:none;color:var(--text-muted);font-size:9px;font-family:'Crimson Pro',serif;transition:.15s;gap:1px;}
+.nav-item .ni{font-size:17px;}
+.nav-item.active{color:var(--gold-lt);}
+.nav-item.active .ni{filter:drop-shadow(0 0 5px rgba(240,192,64,.7));}
+
+/* ── PAGE ── */
+.page{padding:72px 13px 16px;}
+.page-title{font-family:'Cinzel',serif;font-size:15px;color:var(--mahogany);letter-spacing:2px;margin-bottom:2px;}
+.page-subtitle{color:var(--text-muted);font-size:12px;font-style:italic;}
+.divider{display:flex;align-items:center;gap:7px;margin:9px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border-lt);}
+.divider span{color:var(--gold);font-size:12px;}
+.section-head{font-family:'Cinzel',serif;font-size:12px;color:var(--mahogany);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;}
+
+/* ── DASHBOARD HERO ── */
+.budget-hero{background:linear-gradient(135deg,var(--mahogany),var(--crimson));border-radius:14px;padding:16px;margin-bottom:10px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(44,26,14,.3);}
+.budget-hero::before{content:'🕉';position:absolute;right:-6px;top:-6px;font-size:66px;opacity:.07;}
+.hero-lbl{color:rgba(240,192,64,.65);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;}
+.hero-total{font-family:'Cinzel',serif;color:var(--gold-lt);font-size:24px;margin:2px 0 12px;}
+.hero-row{display:flex;gap:8px;}
+.hero-col{flex:1;}
+.hero-val{font-family:'Cinzel',serif;font-size:14px;}
+.hero-col.spent .hero-val{color:#FF9090;}
+.hero-col.remain .hero-val{color:#90EE90;}
+.hero-col.est .hero-val{color:#FFDD80;}
+.progress-bar{height:6px;background:rgba(255,255,255,.12);border-radius:99px;margin-top:11px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-lt),var(--saffron));transition:width .5s;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+@media(min-width:400px){.stats-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:600px){.stats-grid{grid-template-columns:repeat(6,1fr);}}
+.stat-card{background:white;border:1px solid var(--border-lt);border-radius:10px;padding:11px;box-shadow:0 2px 7px rgba(44,26,14,.07);position:relative;overflow:hidden;cursor:pointer;transition:.15s;}
+.stat-card:active{transform:scale(.96);}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--saffron);}
+.stat-card.s-labour::after{background:var(--crimson-lt);}
+.stat-card.s-today::after{background:var(--gold);}
+.stat-card.s-pending::after{background:#888;}
+.stat-card.s-balance::after{background:var(--blue-lt);}
+.stat-card.s-count::after{background:var(--green);}
+.stat-card.s-est::after{background:#9C27B0;}
+.sc-icon{font-size:18px;margin-bottom:3px;}
+.sc-val{font-family:'Cinzel',serif;font-size:14px;color:var(--mahogany);}
+.sc-lbl{color:var(--text-muted);font-size:10px;}
+.sc-tap{color:var(--saffron);font-size:9px;margin-top:1px;}
+
+/* ── BANK BALANCE MINI CARDS ── */
+.bank-mini{display:flex;gap:7px;overflow-x:auto;margin-bottom:10px;padding-bottom:3px;scrollbar-width:none;}
+.bank-mini::-webkit-scrollbar{display:none;}
+.bank-chip{background:white;border:1px solid var(--border-lt);border-radius:9px;padding:9px 12px;flex-shrink:0;min-width:130px;box-shadow:0 1px 5px rgba(44,26,14,.07);}
+.bank-chip .bc-name{font-size:11px;color:var(--text-muted);margin-bottom:2px;}
+.bank-chip .bc-bal{font-family:'Cinzel',serif;font-size:14px;color:var(--blue-lt);}
+.bank-chip .bc-spent{font-size:10px;color:var(--crimson-lt);}
+
+/* ── RECENT ── */
+.recent-section h3{font-family:'Cinzel',serif;font-size:11px;color:var(--mahogany);letter-spacing:1px;margin-bottom:6px;}
+.entry-card{background:white;border:1px solid var(--border-lt);border-radius:9px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:9px;box-shadow:0 1px 4px rgba(44,26,14,.06);}
+.entry-icon{font-size:17px;width:26px;text-align:center;flex-shrink:0;}
+.entry-info{flex:1;min-width:0;}
+.ei-cat{font-weight:600;color:var(--text);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ei-meta{color:var(--text-muted);font-size:10px;line-height:1.4;}
+.entry-amt{font-family:'Cinzel',serif;font-size:13px;color:var(--crimson-lt);text-align:right;flex-shrink:0;}
+.entry-amt .ea-bal{font-size:9px;color:var(--blue-lt);display:block;}
+
+/* ── PHASES ── */
+.progress-section{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:12px;margin-bottom:10px;}
+.progress-section h3{font-family:'Cinzel',serif;font-size:11px;color:var(--mahogany);letter-spacing:1px;margin-bottom:8px;}
+.phase-item{margin-bottom:8px;}
+.phase-header{display:flex;justify-content:space-between;margin-bottom:2px;}
+.phase-name{font-size:11px;color:var(--text);}
+.phase-pct{font-size:10px;color:var(--saffron);font-weight:600;}
+.phase-track{height:5px;background:var(--ivory-dk);border-radius:99px;overflow:hidden;}
+.phase-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--saffron),var(--gold));transition:.4s;}
+
+/* ── FORM ── */
+.form-card{background:white;border:1px solid var(--border-lt);border-radius:12px;padding:16px;box-shadow:0 2px 10px rgba(44,26,14,.08);margin-bottom:12px;}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border-lt);border-radius:8px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--text);background:var(--ivory);outline:none;transition:.2s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--saffron);background:white;}
+.form-group textarea{resize:vertical;min-height:55px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.type-tabs{display:flex;gap:5px;margin-bottom:12px;}
+.type-tab{flex:1;padding:8px;text-align:center;border:1.5px solid var(--border-lt);border-radius:8px;cursor:pointer;font-size:13px;background:var(--ivory);color:var(--text-mid);transition:.15s;}
+.type-tab.active{background:var(--saffron);border-color:var(--saffron);color:white;font-weight:600;}
+/* partial */
+#partial-fields{display:none;background:var(--ivory-dk);border-radius:8px;padding:10px;margin-top:-6px;margin-bottom:12px;border:1px solid var(--border-lt);}
+#partial-fields.show{display:block;}
+#partial-fields label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;margin-top:8px;}
+#partial-fields label:first-child{margin-top:0;}
+#partial-fields input{width:100%;padding:9px 11px;border:1.5px solid var(--border-lt);border-radius:7px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--text);background:white;outline:none;}
+#partial-fields input:focus{border-color:var(--saffron);}
+#partial-balance{color:var(--crimson-lt);font-size:12px;margin-top:5px;font-weight:600;}
+
+/* Pay-now inline panel */
+#paynow-fields{display:none;background:#FFF8E1;border-radius:8px;padding:10px;margin-top:-6px;margin-bottom:12px;border:1.5px solid #FFD54F;}
+#paynow-fields.show{display:block;}
+#paynow-fields label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;margin-top:8px;}
+#paynow-fields label:first-child{margin-top:0;}
+#paynow-fields input,#paynow-fields select{width:100%;padding:9px 11px;border:1.5px solid var(--border-lt);border-radius:7px;font-family:'Crimson Pro',serif;font-size:15px;color:var(--text);background:white;outline:none;}
+#paynow-summary{font-size:12px;color:var(--green);margin-top:6px;font-weight:600;}
+
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--saffron),var(--crimson-lt));border:none;border-radius:10px;color:white;font-family:'Cinzel',serif;font-size:13px;letter-spacing:1.5px;cursor:pointer;box-shadow:0 4px 14px rgba(232,104,10,.35);transition:.2s;margin-top:4px;}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.5;transform:none;}
+.btn-secondary{width:100%;padding:10px;background:var(--ivory-dk);border:1.5px solid var(--border-lt);border-radius:10px;color:var(--text-mid);font-family:'Cinzel',serif;font-size:12px;cursor:pointer;margin-top:6px;transition:.2s;}
+.btn-green{width:100%;padding:11px;background:linear-gradient(135deg,var(--green-lt),var(--green));border:none;border-radius:10px;color:white;font-family:'Cinzel',serif;font-size:13px;letter-spacing:1px;cursor:pointer;margin-top:6px;transition:.2s;box-shadow:0 3px 10px rgba(46,125,50,.3);}
+
+/* ── LIST CARDS ── */
+.filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;margin-bottom:10px;scrollbar-width:none;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.filter-chip{white-space:nowrap;padding:5px 11px;border:1.5px solid var(--border-lt);border-radius:99px;font-size:11px;cursor:pointer;background:white;color:var(--text-mid);transition:.15s;}
+.filter-chip.active{background:var(--saffron);border-color:var(--saffron);color:white;}
+.material-card{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:12px;margin-bottom:8px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
+.mc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+.mc-name{font-weight:600;font-size:14px;color:var(--text);flex:1;}
+.mc-type{font-size:10px;padding:2px 6px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.mc-amount{font-family:'Cinzel',serif;font-size:15px;color:var(--crimson-lt);margin-top:4px;}
+.mc-partial{font-size:11px;color:var(--blue-lt);margin-top:2px;line-height:1.5;}
+.mc-meta{color:var(--text-muted);font-size:10px;margin-top:4px;line-height:1.7;}
+.mc-payment-trail{background:var(--ivory-dk);border-radius:6px;padding:7px 9px;margin-top:8px;font-size:11px;color:var(--text-mid);}
+.mc-payment-trail .pt-title{font-family:'Cinzel',serif;font-size:10px;color:var(--mahogany);margin-bottom:4px;letter-spacing:.5px;}
+.pt-row{margin-bottom:2px;}
+.mc-actions{display:flex;gap:6px;margin-top:9px;border-top:1px solid var(--border-lt);padding-top:8px;flex-wrap:wrap;}
+.btn-sm{flex:1;min-width:70px;padding:7px;text-align:center;border-radius:7px;font-size:12px;cursor:pointer;border:none;transition:.15s;font-family:'Crimson Pro',serif;}
+.btn-edit{background:var(--ivory-dk);color:var(--text-mid);}
+.btn-delete{background:#FFF0F0;color:var(--crimson);}
+.btn-paynow{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);color:var(--green);font-weight:600;border:1px solid #A5D6A7;}
+
+/* ── BUDGET TAB ── */
+.bank-card{background:white;border:1px solid var(--border-lt);border-radius:11px;padding:13px;margin-bottom:9px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
+.bank-card-head{display:flex;justify-content:space-between;align-items:flex-start;}
+.bank-card-name{font-weight:600;font-size:15px;color:var(--text);}
+.bank-card-type{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);letter-spacing:1px;}
+.bank-total{font-family:'Cinzel',serif;font-size:18px;color:var(--blue-lt);margin-top:4px;}
+.bank-used{font-size:11px;color:var(--crimson-lt);margin-top:2px;}
+.bank-avail{font-size:11px;color:var(--green-lt);margin-top:1px;}
+.bank-actions{display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--border-lt);padding-top:8px;}
+.budget-summary-box{background:linear-gradient(135deg,var(--mahogany),#4A2020);border-radius:12px;padding:15px;margin-bottom:12px;color:white;box-shadow:0 4px 18px rgba(44,26,14,.25);}
+.bsb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.bsb-label{font-size:11px;color:rgba(240,192,64,.7);letter-spacing:1px;text-transform:uppercase;}
+.bsb-val{font-family:'Cinzel',serif;font-size:16px;color:var(--gold-lt);}
+.bsb-val.red{color:#FF9090;}
+.bsb-val.green{color:#90EE90;}
+.bsb-val.yellow{color:#FFDD80;}
+
+/* ── REPORTS ── */
+.report-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:12px;}
+@media(min-width:400px){.report-summary{grid-template-columns:repeat(3,1fr);}}
+.rep-card{background:white;border:1px solid var(--border-lt);border-radius:9px;padding:10px;text-align:center;box-shadow:0 1px 5px rgba(44,26,14,.07);}
+.rep-card .rv{font-family:'Cinzel',serif;font-size:14px;color:var(--mahogany);margin-bottom:2px;}
+.rep-card .rl{color:var(--text-muted);font-size:10px;}
+.cat-bar-wrap{background:white;border:1px solid var(--border-lt);border-radius:10px;padding:11px;margin-bottom:7px;}
+.cat-bar-head{display:flex;justify-content:space-between;margin-bottom:5px;}
+.cat-bar-name{font-weight:600;color:var(--text);font-size:13px;}
+.cat-bar-amt{font-family:'Cinzel',serif;color:var(--saffron);font-size:13px;}
+.cat-bar-track{height:5px;background:var(--ivory-dk);border-radius:99px;overflow:hidden;}
+.cat-bar-fill{height:100%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:99px;}
+
+/* ── MEMBERS ── */
+.member-card{background:white;border:1px solid var(--border-lt);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px;box-shadow:0 2px 7px rgba(44,26,14,.07);}
+.member-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--saffron),var(--crimson));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:15px;color:white;flex-shrink:0;}
+.member-info{flex:1;}
+.member-name{font-weight:600;color:var(--text);font-size:14px;}
+.member-role{font-size:10px;padding:2px 6px;border-radius:99px;background:var(--ivory-dk);color:var(--text-muted);display:inline-block;margin-top:1px;}
+.member-role.owner{background:#FFF3E0;color:var(--saffron);}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:1000;background:rgba(44,26,14,.65);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--ivory);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:16px 15px 44px;animation:slideUp .28s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:34px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;}
+.modal-title{font-family:'Cinzel',serif;font-size:15px;color:var(--mahogany);margin-bottom:12px;letter-spacing:1px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--mahogany);color:var(--gold-lt);padding:8px 16px;border-radius:99px;font-size:12px;z-index:2000;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;border:1px solid rgba(212,169,106,.3);max-width:90vw;text-align:center;}
+#toast.show{opacity:1;}
+.empty{text-align:center;padding:32px 16px;color:var(--text-muted);}
+.empty .ei{font-size:40px;margin-bottom:8px;}
+.empty p{font-size:13px;font-style:italic;}
+.spinner{text-align:center;padding:24px;color:var(--text-muted);font-style:italic;font-size:13px;}
+.tag-green{background:#E8F5E9;color:var(--green);font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid #A5D6A7;}
+.tag-orange{background:#FFF3E0;color:var(--saffron);font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid var(--border);}
+.tag-red{background:#FFEBEE;color:var(--crimson);font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid #FFCDD2;}
+/* Field error highlight */
+.field-error{border-color:#E53935 !important;background:#FFF5F5 !important;}
+/* Bank txn log */
+.btxn-log{background:var(--ivory-dk);border-radius:8px;padding:9px 10px;margin-top:9px;border:1px solid var(--border-lt);}
+.btxn-log-title{font-family:'Cinzel',serif;font-size:10px;color:var(--mahogany);letter-spacing:1px;margin-bottom:6px;}
+.btxn-row{font-size:11px;color:var(--text-mid);padding:4px 0;border-bottom:1px solid var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:6px;}
+.btxn-row:last-child{border-bottom:none;}
+.btxn-left{flex:1;}
+.btxn-right{font-family:'Cinzel',serif;font-size:11px;white-space:nowrap;}
+.btxn-right.cadd{color:var(--green);}
+.btxn-right.cout{color:var(--crimson-lt);}
+.btxn-right.cin{color:var(--blue-lt);}
+.bank-op-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.bank-op-tab{flex:1;padding:8px;text-align:center;border:1.5px solid var(--border-lt);border-radius:8px;cursor:pointer;font-size:13px;background:var(--ivory);color:var(--text-mid);transition:.15s;}
+.bank-op-tab.active{background:var(--green-lt);border-color:var(--green-lt);color:white;font-weight:600;}
+.bank-op-tab.atransfer.active{background:var(--blue-lt);border-color:var(--blue-lt);}
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div id="screen-login">
+  <div class="login-temple">
+    <span class="kalash">🏛️</span>
+    <h1>DREAM HOUSE</h1>
+    <p>Hatti Family Construction Tracker</p>
+  </div>
+  <div class="login-card">
+    <span class="lc-label">Select Your Name</span>
+    <div class="member-pick" id="member-pick">
+      <div class="spinner" style="width:100%;">Loading members…</div>
+    </div>
+    <span class="lc-label">6-Digit PIN</span>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="dot-0"></div><div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div><div class="pin-dot" id="dot-3"></div>
+      <div class="pin-dot" id="dot-4"></div><div class="pin-dot" id="dot-5"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn danger" onclick="pinClear()">✕</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinBack()">⌫</button>
+    </div>
+    <button class="btn-login" onclick="doLogin()">🪔 Enter</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="demo-hint">Demo: Select name card → PIN <b style="color:rgba(240,192,64,.8)">123456</b></div>
+  </div>
+</div>
+
+<!-- ═══════ MAIN APP ═══════ -->
+<div id="screen-app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-title">🏠 DREAM HOUSE</div>
+    <div class="topbar-right">
+      <div class="topbar-user" id="topbar-user"></div>
+      <button class="topbar-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD ── -->
+  <div id="tab-dashboard" class="page" style="display:block">
+    <div class="page-title">Namaskara 🙏</div>
+    <div class="page-subtitle" id="dash-greeting">Loading…</div>
+    <div class="divider"><span>✦</span></div>
+    <div class="budget-hero">
+      <div class="hero-lbl">Real Budget (Sum of Accounts)</div>
+      <div class="hero-total" id="dash-budget">₹0</div>
+      <div class="hero-row">
+        <div class="hero-col spent"><div class="hero-lbl">Paid / Spent</div><div class="hero-val" id="dash-spent">₹0</div></div>
+        <div class="hero-col remain"><div class="hero-lbl">Funds Left</div><div class="hero-val" id="dash-remain">₹0</div></div>
+        <div class="hero-col est"><div class="hero-lbl">Estimated</div><div class="hero-val" id="dash-est">₹0</div></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="dash-progress" style="width:0%"></div></div>
+    </div>
+    <!-- Bank mini cards -->
+    <div class="bank-mini" id="bank-mini-row"></div>
+    <!-- Stat cards -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="quickNav('material')">
+        <div class="sc-icon">🧱</div><div class="sc-val" id="stat-material">₹0</div>
+        <div class="sc-lbl">Materials Paid</div><div class="sc-tap">tap →</div>
+      </div>
+      <div class="stat-card s-labour" onclick="quickNav('labour')">
+        <div class="sc-icon">👷</div><div class="sc-val" id="stat-labour">₹0</div>
+        <div class="sc-lbl">Labour Paid</div><div class="sc-tap">tap →</div>
+      </div>
+      <div class="stat-card s-today" onclick="quickNav('today')">
+        <div class="sc-icon">📅</div><div class="sc-val" id="stat-today">₹0</div>
+        <div class="sc-lbl">Today</div><div class="sc-tap">tap →</div>
+      </div>
+      <div class="stat-card s-pending" onclick="quickNav('pending')">
+        <div class="sc-icon">⏳</div><div class="sc-val" id="stat-pending">₹0</div>
+        <div class="sc-lbl">Fully Pending</div><div class="sc-tap">tap →</div>
+      </div>
+      <div class="stat-card s-balance" onclick="quickNav('partial')">
+        <div class="sc-icon">🔸</div><div class="sc-val" id="stat-balance">₹0</div>
+        <div class="sc-lbl">Partial Balance</div><div class="sc-tap">tap →</div>
+      </div>
+      <div class="stat-card s-count" onclick="quickNav('all')">
+        <div class="sc-icon">📋</div><div class="sc-val" id="stat-count">0</div>
+        <div class="sc-lbl">Total Entries</div><div class="sc-tap">tap →</div>
+      </div>
+    </div>
+    <div class="progress-section">
+      <h3>🏗️ Construction Progress</h3>
+      <div id="phases-list"></div>
+    </div>
+    <div class="recent-section">
+      <h3>Recent Entries</h3>
+      <div id="recent-list"><div class="spinner">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ── BUDGET TAB ── -->
+  <div id="tab-budget" class="page" style="display:none">
+    <div class="page-title">Budget & Accounts</div>
+    <div class="page-subtitle">Bank accounts, cash & funds tracking</div>
+    <div class="divider"><span>✦</span></div>
+    <!-- Summary box -->
+    <div class="budget-summary-box">
+      <div class="bsb-row"><span class="bsb-label">Total Funds (All Accounts)</span><span class="bsb-val" id="b-total">₹0</span></div>
+      <div class="bsb-row"><span class="bsb-label">Total Spent (Paid)</span><span class="bsb-val red" id="b-spent">₹0</span></div>
+      <div class="bsb-row"><span class="bsb-label">Funds Available</span><span class="bsb-val green" id="b-avail">₹0</span></div>
+      <div class="bsb-row"><span class="bsb-label">Estimated Budget</span><span class="bsb-val yellow" id="b-est">₹0</span></div>
+      <div class="bsb-row"><span class="bsb-label">Est. vs Spent Gap</span><span class="bsb-val" id="b-gap">₹0</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="section-head" style="margin:0">💳 Accounts</div>
+      <button class="btn-sm btn-edit" style="width:auto;padding:5px 12px;" onclick="openBankModal()">+ Add Account</button>
+    </div>
+    <div id="bank-list"><div class="spinner">Loading…</div></div>
+    <button class="btn-secondary" style="margin-top:10px" onclick="exportBankTxnCSV()">📥 Export Bank Transactions (CSV)</button>
+  </div>
+
+  <!-- ── ADD / EDIT ENTRY ── -->
+  <div id="tab-add" class="page" style="display:none">
+    <div class="page-title" id="add-page-title">Add Entry</div>
+    <div class="page-subtitle">Record expense or payment</div>
+    <div class="divider"><span>✦</span></div>
+    <div class="form-card">
+      <div class="type-tabs">
+        <div class="type-tab active" data-type="material" onclick="setType('material')">🧱 Material</div>
+        <div class="type-tab" data-type="labour" onclick="setType('labour')">👷 Labour</div>
+        <div class="type-tab" data-type="other" onclick="setType('other')">📦 Other</div>
+      </div>
+      <div class="form-group"><label>Description / Item</label>
+        <input type="text" id="f-desc" placeholder="e.g. Cement – 50 bags"/></div>
+      <div class="form-group"><label>Category</label>
+        <select id="f-cat"></select></div>
+      <div class="form-row">
+        <div class="form-group"><label>Total Amount (₹)</label>
+          <input type="number" id="f-amount" placeholder="0" inputmode="numeric" oninput="updatePartialBalance()"/></div>
+        <div class="form-group"><label>Date</label>
+          <input type="date" id="f-date"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Vendor / Person</label>
+          <input type="text" id="f-vendor" placeholder="Shop / worker name"/></div>
+        <div class="form-group"><label>Quantity / Unit</label>
+          <input type="text" id="f-qty" placeholder="e.g. 50 bags"/></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Spent By</label>
+          <select id="f-spentby"></select></div>
+        <div class="form-group"><label>Transaction Type</label>
+          <select id="f-txntype" onchange="smartFilterBankAccount()">
+            <option value="">Select…</option>
+            <option>Cash</option>
+            <option>PhonePe</option>
+            <option>Google Pay</option>
+            <option>Paytm</option>
+            <option>NEFT / IMPS</option>
+            <option>Net Banking</option>
+            <option>UPI</option>
+            <option>Cheque</option>
+            <option>DD</option>
+          </select></div>
+      </div>
+      <div class="form-group"><label>Bank / Account Used (Source of Money)</label>
+        <select id="f-bankaccount"></select></div>
+      <div class="form-group"><label>Payment Status</label>
+        <select id="f-status" onchange="togglePartial()">
+          <option value="paid">✅ Paid (Full)</option>
+          <option value="pending">⏳ Pending (Not paid yet)</option>
+          <option value="partial">🔸 Partial Payment</option>
+        </select></div>
+      <!-- Partial sub-fields -->
+      <div id="partial-fields">
+        <label>Amount Paid So Far (₹)</label>
+        <input type="number" id="f-paid" placeholder="0" inputmode="numeric" oninput="updatePartialBalance()"/>
+        <label>Balance Remaining (₹) — auto</label>
+        <input type="number" id="f-balance" readonly placeholder="auto-calculated" style="background:#f0f0f0;color:#888;"/>
+        <div id="partial-balance"></div>
+      </div>
+      <div class="form-group"><label>Notes</label>
+        <textarea id="f-notes" placeholder="Any extra notes…"></textarea></div>
+      <button class="btn-primary" id="btn-save-entry" onclick="saveEntry()">🪔 Save Entry</button>
+      <button class="btn-secondary" id="btn-cancel-edit" onclick="cancelEdit()" style="display:none">✕ Cancel Edit</button>
+    </div>
+  </div>
+
+  <!-- ── ENTRIES LIST ── -->
+  <div id="tab-list" class="page" style="display:none">
+    <div class="page-title">All Entries</div>
+    <div class="page-subtitle" id="list-subtitle">Materials, Labour & More</div>
+    <div class="divider"><span>✦</span></div>
+    <div class="filter-bar">
+      <div class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All</div>
+      <div class="filter-chip" data-filter="material" onclick="setFilter('material',this)">🧱 Material</div>
+      <div class="filter-chip" data-filter="labour" onclick="setFilter('labour',this)">👷 Labour</div>
+      <div class="filter-chip" data-filter="other" onclick="setFilter('other',this)">📦 Other</div>
+      <div class="filter-chip" data-filter="pending" onclick="setFilter('pending',this)">⏳ Pending</div>
+      <div class="filter-chip" data-filter="partial" onclick="setFilter('partial',this)">🔸 Partial</div>
+      <div class="filter-chip" data-filter="today" onclick="setFilter('today',this)">📅 Today</div>
+    </div>
+    <div id="entries-list"><div class="spinner">Loading…</div></div>
+  </div>
+
+  <!-- ── REPORTS ── -->
+  <div id="tab-reports" class="page" style="display:none">
+    <div class="page-title">Reports</div>
+    <div class="page-subtitle">Spending overview & breakdown</div>
+    <div class="divider"><span>✦</span></div>
+    <div class="report-summary">
+      <div class="rep-card"><div class="rv" id="r-total">₹0</div><div class="rl">Total Paid</div></div>
+      <div class="rep-card"><div class="rv" id="r-material">₹0</div><div class="rl">Materials</div></div>
+      <div class="rep-card"><div class="rv" id="r-labour">₹0</div><div class="rl">Labour</div></div>
+      <div class="rep-card"><div class="rv" id="r-other">₹0</div><div class="rl">Other</div></div>
+      <div class="rep-card"><div class="rv" id="r-pending">₹0</div><div class="rl">Full Pending</div></div>
+      <div class="rep-card"><div class="rv" id="r-balance">₹0</div><div class="rl">Partial Balance</div></div>
+    </div>
+    <div class="section-head">Category Breakdown</div>
+    <div id="cat-breakdown"></div>
+    <div class="section-head" style="margin-top:12px">By Account / Source</div>
+    <div id="bank-breakdown"></div>
+    <div class="section-head" style="margin-top:12px">By Member (Who Spent)</div>
+    <div id="member-breakdown"></div>
+    <button class="btn-primary" style="margin-top:12px" onclick="exportCSV('all')">📥 Export All Entries (CSV)</button>
+    <button class="btn-secondary" onclick="exportCSV('filter')">📥 Export Current Filter (CSV)</button>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="tab-members" class="page" style="display:none">
+    <div class="page-title">Members & Settings</div>
+    <div class="page-subtitle">Family access & project config</div>
+    <div class="divider"><span>✦</span></div>
+    <div class="form-card">
+      <div class="modal-title" style="font-size:13px;margin-bottom:10px;">📐 Project Estimated Budget</div>
+      <div class="form-group"><label>Estimated / Assumed Total Cost (₹)</label>
+        <input type="number" id="s-budget" placeholder="e.g. 3000000" inputmode="numeric"/></div>
+      <div class="form-group"><label>Project Name</label>
+        <input type="text" id="s-projname" placeholder="e.g. Gunnal Dream House"/></div>
+      <button class="btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+    </div>
+    <div class="divider"><span>✦</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="section-head" style="margin:0">👨‍👩‍👧 Family Members</div>
+      <button class="btn-sm btn-edit" style="width:auto;padding:5px 12px;" onclick="openAddMember()">+ Add</button>
+    </div>
+    <div id="members-list"><div class="spinner">Loading…</div></div>
+    <div class="divider"><span>✦</span></div>
+    <div class="section-head">🏗️ Construction Phases</div>
+    <div class="form-card">
+      <div id="phases-settings"></div>
+      <button class="btn-primary" style="margin-top:8px" onclick="savePhases()">💾 Save Phases</button>
+    </div>
+    <div class="divider"><span>✦</span></div>
+    <div class="section-head">🔐 Firebase Security Rules</div>
+    <div class="form-card">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Copy these rules into your Firebase console → Firestore → Rules:</div>
+      <pre id="firebase-rules" style="background:var(--mahogany);color:var(--gold-lt);padding:12px;border-radius:8px;font-size:10px;overflow-x:auto;line-height:1.6;white-space:pre-wrap;"></pre>
+      <button class="btn-secondary" onclick="copyRules()">📋 Copy Rules</button>
+    </div>
+  </div>
+
+  <!-- Bottom Nav (6 tabs) -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard',this)"><span class="ni">🏠</span>Home</button>
+    <button class="nav-item" id="nav-budget" onclick="showTab('budget',this)"><span class="ni">💳</span>Budget</button>
+    <button class="nav-item" id="nav-add" onclick="showTab('add',this)"><span class="ni">➕</span>Add</button>
+    <button class="nav-item" id="nav-list" onclick="showTab('list',this)"><span class="ni">📋</span>Entries</button>
+    <button class="nav-item" id="nav-reports" onclick="showTab('reports',this)"><span class="ni">📊</span>Reports</button>
+    <button class="nav-item" id="nav-members" onclick="showTab('members',this)"><span class="ni">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="modal-member">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Family Member</div>
+    <div class="form-group"><label>Name</label><input type="text" id="m-name" placeholder="Member name"/></div>
+    <div class="form-group"><label>Role</label>
+      <select id="m-role">
+        <option value="member">Member (Add &amp; Edit only)</option>
+        <option value="owner">Owner (Full Access + Delete)</option>
+      </select></div>
+    <div class="form-group"><label>6-Digit PIN</label>
+      <input type="number" id="m-pin" placeholder="e.g. 654321" inputmode="numeric"/></div>
+    <button class="btn-primary" onclick="saveMember()">➕ Add Member</button>
+    <button class="btn-secondary" onclick="closeModal('modal-member')">Cancel</button>
+  </div>
+</div>
+
+<!-- Add/Edit Bank Account Modal -->
+<div class="modal-overlay" id="modal-bank">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="bank-modal-title">Add Account</div>
+    <div class="form-group"><label>Account Name / Label</label>
+      <input type="text" id="ba-name" placeholder="e.g. SBI Savings, Cash In Hand, Canara Bank"/></div>
+    <div class="form-group"><label>Account Type</label>
+      <select id="ba-type">
+        <option>Savings Account</option>
+        <option>Current Account</option>
+        <option>Cash In Hand</option>
+        <option>Fixed Deposit</option>
+        <option>Loan / Credit</option>
+        <option>Other</option>
+      </select></div>
+    <div class="form-group"><label>Initial Amount / Total Balance (₹)</label>
+      <input type="number" id="ba-amount" placeholder="Amount allocated for construction" inputmode="numeric"/></div>
+    <div class="form-group"><label>Bank Name (optional)</label>
+      <input type="text" id="ba-bank" placeholder="e.g. State Bank of India"/></div>
+    <div class="form-group"><label>Notes</label>
+      <input type="text" id="ba-notes" placeholder="Optional notes"/></div>
+    <input type="hidden" id="ba-id"/>
+    <button class="btn-primary" onclick="saveBankAccount()">💾 Save Account</button>
+    <button class="btn-secondary" onclick="closeModal('modal-bank')">Cancel</button>
+  </div>
+</div>
+
+<!-- Bank Update / Transfer Modal -->
+<div class="modal-overlay" id="modal-bankop">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="bankop-title">Update Account</div>
+    <div id="bankop-info" style="background:var(--ivory-dk);border-radius:8px;padding:10px;margin-bottom:12px;font-size:13px;border:1px solid var(--border-lt);"></div>
+    <input type="hidden" id="bop-bank-id"/>
+    <div class="bank-op-tabs">
+      <div class="bank-op-tab active" id="bop-tab-add" onclick="setBankOp('add')">➕ Add Funds</div>
+      <div class="bank-op-tab atransfer" id="bop-tab-transfer" onclick="setBankOp('transfer')">🔀 Transfer</div>
+    </div>
+    <!-- ADD FUNDS fields -->
+    <div id="bop-add-fields">
+      <div class="form-group"><label>Amount Added (₹) *</label>
+        <input type="number" id="bop-add-amount" placeholder="0" inputmode="numeric"/></div>
+      <div class="form-group"><label>Date *</label>
+        <input type="date" id="bop-add-date"/></div>
+      <div class="form-group"><label>Added By (Who) *</label>
+        <select id="bop-add-by"></select></div>
+      <div class="form-group"><label>Source of Amount</label>
+        <input type="text" id="bop-add-source" placeholder="e.g. Salary, FD withdrawal, Loan, Gift…"/></div>
+      <div class="form-group"><label>Notes / Remarks</label>
+        <input type="text" id="bop-add-notes" placeholder="Optional remarks"/></div>
+    </div>
+    <!-- TRANSFER fields -->
+    <div id="bop-transfer-fields" style="display:none">
+      <div class="form-group"><label>Transfer From *</label>
+        <select id="bop-from-bank"><option value="">Select account…</option></select></div>
+      <div class="form-group"><label>Transfer To *</label>
+        <select id="bop-to-bank"><option value="">Select account…</option></select></div>
+      <div class="form-group"><label>Amount (₹) *</label>
+        <input type="number" id="bop-txfr-amount" placeholder="0" inputmode="numeric"/></div>
+      <div class="form-group"><label>Date *</label>
+        <input type="date" id="bop-txfr-date"/></div>
+      <div class="form-group"><label>Transferred By *</label>
+        <select id="bop-txfr-by"></select></div>
+      <div class="form-group"><label>Notes / Remarks</label>
+        <input type="text" id="bop-txfr-notes" placeholder="Optional remarks"/></div>
+    </div>
+    <div id="bankop-result" style="font-size:12px;color:var(--green);font-weight:600;margin-bottom:6px;min-height:14px;"></div>
+    <button class="btn-green" id="bop-confirm-btn" onclick="confirmBankOp()">✅ Confirm</button>
+    <button class="btn-secondary" onclick="closeModal('modal-bankop')">Cancel</button>
+  </div>
+</div>
+
+<!-- Pay Now Modal -->
+<div class="modal-overlay" id="modal-paynow">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💰 Pay Now</div>
+    <div id="paynow-entry-summary" style="background:var(--ivory-dk);border-radius:8px;padding:10px;margin-bottom:12px;font-size:13px;border:1px solid var(--border-lt);"></div>
+    <input type="hidden" id="pn-entry-id"/>
+    <div class="form-group"><label>Amount Paying Now (₹)</label>
+      <input type="number" id="pn-amount" placeholder="0" inputmode="numeric" oninput="updatePayNowSummary()"/></div>
+    <div class="form-group"><label>Payment Date</label>
+      <input type="date" id="pn-date"/></div>
+    <div class="form-group"><label>Paid By (Who handled)</label>
+      <select id="pn-paidby"></select></div>
+    <div class="form-group"><label>Transaction Type</label>
+      <select id="pn-txntype" onchange="smartFilterPayNowBank()">
+        <option value="">Select…</option>
+        <option>Cash</option><option>PhonePe</option><option>Google Pay</option>
+        <option>Paytm</option><option>NEFT / IMPS</option><option>Net Banking</option>
+        <option>UPI</option><option>Cheque</option><option>DD</option>
+      </select></div>
+    <div class="form-group"><label>Bank / Account Used</label>
+      <select id="pn-bankaccount"></select></div>
+    <div class="form-group"><label>Notes / Remark</label>
+      <input type="text" id="pn-notes" placeholder="e.g. Final payment after inspection"/></div>
+    <div id="paynow-result" style="font-size:12px;color:var(--green);font-weight:600;margin-bottom:6px;min-height:16px;"></div>
+    <button class="btn-green" onclick="confirmPayNow()">✅ Confirm Payment</button>
+    <button class="btn-secondary" onclick="closeModal('modal-paynow')">Cancel</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  FIREBASE CONFIG — replace with yours
+// ══════════════════════════════════════════════
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyCkCTabNSmEvYcCtO_cMkKBuRG60nyVpKI",authDomain:"dreamhouse-demo.firebaseapp.com",
+  projectId:"dreamhouse-demo",storageBucket:"dreamhouse-demo.firebasestorage.app",
+  messagingSenderId:"14549890111",appId:"1:14549890111:web:3f66f0948eff53525e748a"
+};
+let DEMO=false,db=null;
+try{
+  firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();
+  if(FIREBASE_CONFIG.apiKey==="YOUR_API_KEY")throw new Error("demo");
+}catch(e){DEMO=false;}
+
+// ══════════════════════════════════════════════
+//  DEMO SEED
+// ══════════════════════════════════════════════
+const DS={
+  settings:{estimatedBudget:3000000,projectName:"Dream House – Gunnal"},
+  entries:[
+    {id:"e1",type:"material",category:"Cement",description:"Cement – 100 bags",amount:18000,paidAmt:18000,balanceAmt:0,vendor:"Koppal Traders",qty:"100 bags",date:"2025-04-10",status:"paid",spentBy:"Gavisiddappa",txnType:"Cash",bankAccount:"Cash In Hand",addedBy:"Gavisiddappa",notes:"",payments:[]},
+    {id:"e2",type:"labour",category:"Mason",description:"Foundation masonry work",amount:32000,paidAmt:20000,balanceAmt:12000,vendor:"Ramesh & team",qty:"15 days",date:"2025-04-15",status:"partial",spentBy:"Uma",txnType:"PhonePe",bankAccount:"SBI – Gavisiddappa",addedBy:"Uma",notes:"Balance on slab completion",payments:[{amt:20000,date:"2025-04-15",paidBy:"Uma",txnType:"PhonePe",bank:"SBI – Gavisiddappa",note:"First instalment"}]},
+    {id:"e3",type:"material",category:"Steel",description:"TMT Steel rods 10mm & 12mm",amount:56000,paidAmt:56000,balanceAmt:0,vendor:"Bellary Steel Depot",qty:"500 kg",date:"2025-04-18",status:"paid",spentBy:"Gavisiddappa",txnType:"NEFT / IMPS",bankAccount:"SBI – Gavisiddappa",addedBy:"Gavisiddappa",notes:"",payments:[]},
+    {id:"e4",type:"labour",category:"Electrician",description:"Electrical wiring Phase 1",amount:15000,paidAmt:0,balanceAmt:15000,vendor:"Mahesh Electricals",qty:"",date:"2025-04-22",status:"pending",spentBy:"",txnType:"",bankAccount:"",addedBy:"Gavisiddappa",notes:"Work not started",payments:[]},
+    {id:"e5",type:"material",category:"Bricks",description:"Red country bricks",amount:22000,paidAmt:22000,balanceAmt:0,vendor:"Local Kiln – Ginigera",qty:"5000 units",date:"2025-04-25",status:"paid",spentBy:"Uma",txnType:"Cash",bankAccount:"Cash In Hand",addedBy:"Uma",notes:"",payments:[]},
+    {id:"e6",type:"material",category:"Sand (M-Sand)",description:"M-Sand for masonry",amount:9000,paidAmt:5000,balanceAmt:4000,vendor:"Sand Depot",qty:"5 loads",date:"2025-05-01",status:"partial",spentBy:"Gavisiddappa",txnType:"Google Pay",bankAccount:"Canara Bank",addedBy:"Gavisiddappa",notes:"2 loads pending",payments:[{amt:5000,date:"2025-05-01",paidBy:"Gavisiddappa",txnType:"Google Pay",bank:"Canara Bank",note:"First delivery"}]},
+    {id:"e7",type:"other",category:"Design / Plan",description:"Architect drawing & approval",amount:25000,paidAmt:25000,balanceAmt:0,vendor:"Surya Architects",qty:"",date:"2025-03-15",status:"paid",spentBy:"Gavisiddappa",txnType:"Net Banking",bankAccount:"SBI – Gavisiddappa",addedBy:"Gavisiddappa",notes:"",payments:[]},
+    {id:"e8",type:"other",category:"Permit / Govt Fee",description:"Panchayat building permit",amount:8500,paidAmt:8500,balanceAmt:0,vendor:"Gram Panchayat",qty:"",date:"2025-03-20",status:"paid",spentBy:"Gavisiddappa",txnType:"Cash",bankAccount:"Cash In Hand",addedBy:"Gavisiddappa",notes:"",payments:[]},
+    {id:"e9",type:"labour",category:"Plumber",description:"Water pipeline rough-in",amount:12000,paidAmt:6000,balanceAmt:6000,vendor:"Shiva Plumbing",qty:"",date:"2025-05-05",status:"partial",spentBy:"Uma",txnType:"PhonePe",bankAccount:"SBI – Gavisiddappa",addedBy:"Uma",notes:"Final after testing",payments:[{amt:6000,date:"2025-05-05",paidBy:"Uma",txnType:"PhonePe",bank:"SBI – Gavisiddappa",note:"Advance"}]},
+    {id:"e10",type:"material",category:"Aggregate / Jelly",description:"20mm aggregate for RCC",amount:14000,paidAmt:14000,balanceAmt:0,vendor:"Koppal Aggregates",qty:"10 MT",date:"2025-05-08",status:"paid",spentBy:"Gavisiddappa",txnType:"Cash",bankAccount:"Cash In Hand",addedBy:"Gavisiddappa",notes:"",payments:[]},
+  ],
+  members:[
+    {id:"m1",name:"Gavisiddappa",role:"owner",pin:"123456"},
+    {id:"m2",name:"Uma",role:"member",pin:"654321"},
+  ],
+  banks:[
+    {id:"b1",name:"SBI – Gavisiddappa",type:"Savings Account",amount:1500000,bank:"State Bank of India",notes:"Main account",transactions:[{type:"add",amount:1500000,date:"2025-03-01",by:"Gavisiddappa",source:"Savings",note:"Initial allocation",recordedAt:"2025-03-01"}]},
+    {id:"b2",name:"Canara Bank",type:"Savings Account",amount:500000,bank:"Canara Bank",notes:"",transactions:[{type:"add",amount:500000,date:"2025-03-01",by:"Gavisiddappa",source:"Savings",note:"Initial allocation",recordedAt:"2025-03-01"}]},
+    {id:"b3",name:"Cash In Hand",type:"Cash In Hand",amount:200000,bank:"",notes:"Physical cash kept at home",transactions:[{type:"add",amount:200000,date:"2025-03-01",by:"Gavisiddappa",source:"Withdrawn from SBI",note:"Cash for daily expenses",recordedAt:"2025-03-01"}]},
+  ],
+  phases:[
+    {name:"Site Clearing & Layout",pct:100},{name:"Soil Test & Survey",pct:100},
+    {name:"Foundation / Footing",pct:100},{name:"Plinth Beam",pct:100},
+    {name:"Columns & Pillars",pct:85},{name:"Brick Work / Walls",pct:70},
+    {name:"Lintel & Chajja",pct:65},{name:"Slab / Roofing",pct:35},
+    {name:"Staircase",pct:20},{name:"Plastering (External)",pct:10},
+    {name:"Plastering (Internal)",pct:0},{name:"Electrical Rough-in",pct:40},
+    {name:"Plumbing Rough-in",pct:30},{name:"Flooring / Tiles",pct:0},
+    {name:"Doors & Windows Frames",pct:20},{name:"Doors & Windows Shutters",pct:0},
+    {name:"Waterproofing",pct:15},{name:"Grills & Railings",pct:0},
+    {name:"Painting (External)",pct:0},{name:"Painting (Internal)",pct:0},
+    {name:"Electrical Fittings",pct:0},{name:"Plumbing Fittings",pct:0},
+    {name:"Kitchen & Cabinets",pct:0},{name:"Final Cleanup & Handover",pct:0},
+  ]
+};
+
+const CATEGORIES={
+  material:["Cement","Steel","Sand (M-Sand)","Aggregate / Jelly","Bricks","Concrete Blocks","Paint","Waterproofing","Tiles","Granite / Marble","Plywood / Wood","Glass","Electrical Items","Plumbing Materials","Doors & Windows","Hardware & Fittings","Roofing / Sheet","Scaffolding Material","Other Material"],
+  labour:["Mason / Head Mistri","Helper / Coolie","Electrician","Plumber","Carpenter","Painter","Welder / Fabricator","Excavation / JCB","Centering & Shuttering","Contractor (Lumpsum)","Daily Wages","Lorry / Transport Labour","Other Labour"],
+  other:["Design / Plan","Permit / Govt Fee","Transport / Lorry","Equipment Rent","Water / Borewell","Soil Testing","Temporary Structure","Scaffolding Rent","Miscellaneous"]
+};
+const TICON={material:"🧱",labour:"👷",other:"📦"};
+const SLABEL={paid:"✅ Paid",pending:"⏳ Pending",partial:"🔸 Partial"};
+const PIN_LEN=6;
+
+// State
+let CU=null,currentType="material",currentFilter="all";
+let allEntries=[],settings={},members=[],phases=[],banks=[],editingId=null;
+let selectedMember=null,pinVal="";
+
+// ══════════════════════════════════════════════
+//  PIN
+// ══════════════════════════════════════════════
+function pinPress(d){if(pinVal.length>=PIN_LEN)return;pinVal+=d;updateDots();}
+function pinBack(){pinVal=pinVal.slice(0,-1);updateDots();}
+function pinClear(){pinVal="";updateDots();}
+function updateDots(){for(let i=0;i<PIN_LEN;i++)document.getElementById("dot-"+i).classList.toggle("filled",i<pinVal.length);}
+
+// ══════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════
+async function initLogin(){
+  const list=await loadMembers();
+  renderMemberPick(list);
+}
+function renderMemberPick(list){
+  const el=document.getElementById("member-pick");
+  if(!list.length){el.innerHTML='<div style="color:rgba(240,192,64,.5);font-size:12px;font-style:italic;">No members yet — add via Settings after first login</div>';return;}
+  el.innerHTML=list.map(m=>`
+    <div class="mpick-card" id="mpick-${m.id}" onclick="selectMember('${m.id}')">
+      <div class="mav">${m.name[0].toUpperCase()}</div>
+      <div><div class="mpick-name">${m.name}</div><div class="mpick-role">${m.role==="owner"?"👑 Owner":"👤 Member"}</div></div>
+    </div>`).join("");
+}
+function selectMember(id){
+  selectedMember=members.find(m=>m.id===id)||null;
+  document.querySelectorAll(".mpick-card").forEach(c=>c.classList.remove("sel"));
+  document.getElementById("mpick-"+id)?.classList.add("sel");
+  pinClear();
+  document.getElementById("login-error").textContent="";
+}
+async function doLogin(){
+  const err=document.getElementById("login-error");
+  err.textContent="";
+  if(!selectedMember){err.textContent="Please select your name card first.";return;}
+  if(pinVal.length!==PIN_LEN){err.textContent=`Enter your ${PIN_LEN}-digit PIN.`;return;}
+  if(selectedMember.pin!==pinVal){err.textContent="❌ Incorrect PIN.";pinClear();return;}
+  CU=selectedMember;
+  sessionStorage.setItem("dh_user",JSON.stringify(CU));
+  enterApp();
+}
+function doLogout(){
+  sessionStorage.removeItem("dh_user");
+  sessionStorage.removeItem("dh_tab");   // ← clear tab on logout
+  CU=null;selectedMember=null;pinClear();
+  document.querySelectorAll(".mpick-card").forEach(c=>c.classList.remove("sel"));
+  document.getElementById("login-error").textContent="";
+  document.getElementById("screen-login").style.display="flex";
+  document.getElementById("screen-app").style.display="none";
+}
+
+// ══════════════════════════════════════════════
+//  ENTER APP
+// ══════════════════════════════════════════════
+async function enterApp(){
+  document.getElementById("screen-login").style.display="none";
+  document.getElementById("screen-app").style.display="block";
+  document.getElementById("topbar-user").textContent=CU.name+(CU.role==="owner"?" 👑":"");
+  await Promise.all([loadSettings(),loadEntries(),loadBanks(),loadPhases()]);
+  renderDashboard();
+  setType("material");
+  populateSelectDropdowns();
+  document.getElementById("f-date").value=new Date().toISOString().slice(0,10);
+  restoreTab();   // ← go back to the tab user was on before refresh
+}
+
+// ══════════════════════════════════════════════
+//  DATA LAYER
+// ══════════════════════════════════════════════
+async function loadSettings(){
+  if(DEMO){settings={...DS.settings};return;}
+  try{const d=await db.collection("settings").doc("main").get();if(d.exists)settings=d.data();}catch(e){}
+}
+async function saveSettings(){
+  const b=parseInt(document.getElementById("s-budget").value)||0;
+  const n=document.getElementById("s-projname").value.trim()||"Dream House";
+  settings={estimatedBudget:b,projectName:n};
+  if(DEMO)DS.settings=settings;
+  else try{await db.collection("settings").doc("main").set(settings);}catch(e){}
+  toast("✅ Settings saved");renderDashboard();
+}
+async function loadEntries(){
+  if(DEMO){allEntries=DS.entries.map(e=>({...e,payments:e.payments||[]}));return;}
+  try{
+    const s=await db.collection("entries").orderBy("createdAt","desc").get();
+    allEntries=s.docs.map(d=>({id:d.id,...d.data(),payments:d.data().payments||[]}));
+  }catch(e){}
+}
+async function loadMembers(){
+  if(DEMO){members=[...DS.members];return members;}
+  try{
+    const s=await db.collection("members").get();
+    members=s.docs.map(d=>({id:d.id,...d.data()}));
+    if(!members.length)members=[{id:"default",name:"Owner",role:"owner",pin:"123456"}];
+  }catch(e){members=[{id:"default",name:"Owner",role:"owner",pin:"123456"}];}
+  return members;
+}
+async function loadBanks(){
+  if(DEMO){banks=DS.banks.map(b=>({...b}));return;}
+  try{
+    const s=await db.collection("banks").get();
+    banks=s.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){}
+}
+async function loadPhases(){
+  if(DEMO){phases=DS.phases.map(p=>({...p}));return;}
+  try{
+    const d=await db.collection("settings").doc("phases").get();
+    phases=d.exists?(d.data().list||[]):DS.phases.map(p=>({...p}));
+  }catch(e){phases=DS.phases.map(p=>({...p}));}
+}
+async function savePhases(){
+  document.querySelectorAll(".phase-row").forEach((r,i)=>{
+    phases[i].pct=Math.min(100,Math.max(0,parseInt(r.querySelector("input").value)||0));
+  });
+  if(DEMO)DS.phases=[...phases];
+  else try{await db.collection("settings").doc("phases").set({list:phases});}catch(e){}
+  toast("✅ Phases saved");renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+//  TOTALS
+// ══════════════════════════════════════════════
+function calcTotals(){
+  let spent=0,pendAmt=0,partBal=0,matAmt=0,labAmt=0,todayAmt=0;
+  const today=new Date().toISOString().slice(0,10);
+  allEntries.forEach(e=>{
+    const a=e.amount||0,pa=e.paidAmt||0,ba=e.balanceAmt||0;
+    if(e.status==="paid"){spent+=a;}
+    if(e.status==="partial"){spent+=pa;partBal+=ba;}
+    if(e.status==="pending"){pendAmt+=a;}
+    if(e.type==="material"){if(e.status==="paid")matAmt+=a;if(e.status==="partial")matAmt+=pa;}
+    if(e.type==="labour"){if(e.status==="paid")labAmt+=a;if(e.status==="partial")labAmt+=pa;}
+    if(e.date===today){if(e.status==="paid")todayAmt+=a;if(e.status==="partial")todayAmt+=pa;}
+  });
+  const bankTotal=banks.reduce((s,b)=>s+(b.amount||0),0);
+  return{spent,pendAmt,partBal,matAmt,labAmt,todayAmt,bankTotal};
+}
+// Spent per bank account
+function calcBankSpent(bankName){
+  let s=0;
+  allEntries.forEach(e=>{
+    if(e.bankAccount!==bankName)return;
+    if(e.status==="paid")s+=e.amount||0;
+    if(e.status==="partial"){
+      // sum all payment trail amounts for this bank
+      (e.payments||[]).forEach(p=>{if(p.bank===bankName)s+=p.amt||0;});
+      // fallback if no trail
+      if(!(e.payments||[]).length)s+=e.paidAmt||0;
+    }
+  });
+  return s;
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard(){
+  const{spent,pendAmt,partBal,matAmt,labAmt,todayAmt,bankTotal}=calcTotals();
+  const est=settings.estimatedBudget||0;
+  const g=id=>document.getElementById(id);
+  g("dash-greeting").textContent=`Welcome, ${CU.name}! 🏠  ${settings.projectName||"Dream House"}`;
+  g("dash-budget").textContent=fmt(bankTotal);
+  g("dash-spent").textContent=fmt(spent);
+  g("dash-remain").textContent=fmt(bankTotal-spent);
+  g("dash-est").textContent=fmt(est);
+  g("dash-progress").style.width=bankTotal?(Math.min(spent/bankTotal*100,100).toFixed(1)+"%"):"0%";
+  g("stat-material").textContent=fmt(matAmt);
+  g("stat-labour").textContent=fmt(labAmt);
+  g("stat-today").textContent=fmt(todayAmt);
+  g("stat-pending").textContent=fmt(pendAmt);
+  g("stat-balance").textContent=fmt(partBal);
+  g("stat-count").textContent=allEntries.length;
+  // Bank mini row
+  g("bank-mini-row").innerHTML=banks.map(b=>{
+    const sp=calcBankSpent(b.name);
+    return`<div class="bank-chip">
+      <div class="bc-name">${b.name}</div>
+      <div class="bc-bal">${fmt(b.amount)}</div>
+      <div class="bc-spent">Spent: ${fmt(sp)} · Left: ${fmt(b.amount-sp)}</div>
+    </div>`;
+  }).join("")||'<div style="color:var(--text-muted);font-size:12px;font-style:italic;padding:8px;">No accounts added yet — go to 💳 Budget tab</div>';
+  // Phases
+  g("phases-list").innerHTML=phases.map(p=>`
+    <div class="phase-item">
+      <div class="phase-header"><span class="phase-name">${p.name}</span><span class="phase-pct">${p.pct}%</span></div>
+      <div class="phase-track"><div class="phase-fill" style="width:${p.pct}%"></div></div>
+    </div>`).join("");
+  // Recent
+  const rec=[...allEntries].slice(0,5);
+  g("recent-list").innerHTML=rec.length?rec.map(recentHTML).join("")
+    :"<div class='empty'><div class='ei'>📋</div><p>No entries yet. Tap ➕ to add.</p></div>";
+  // Settings prefill
+  g("s-budget").value=settings.estimatedBudget||"";
+  g("s-projname").value=settings.projectName||"";
+  // Phase settings
+  g("phases-settings").innerHTML=phases.map((p,i)=>`
+    <div class="phase-row" style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <span style="flex:1;font-size:11px;">${p.name}</span>
+      <input type="number" value="${p.pct}" min="0" max="100"
+        style="width:56px;padding:5px 6px;border:1.5px solid var(--border-lt);border-radius:6px;font-size:13px;text-align:center;font-family:'Crimson Pro',serif;background:var(--ivory);"/>
+      <span style="font-size:10px;color:var(--text-muted);">%</span>
+    </div>`).join("");
+  // Firebase rules display
+  const rulesEl=g("firebase-rules");
+  if(rulesEl)rulesEl.textContent=FIREBASE_RULES;
+}
+function recentHTML(e){
+  const isP=e.status==="partial";
+  const bal=isP&&e.balanceAmt?`<span class="ea-bal">Bal: ${fmt(e.balanceAmt)}</span>`:"";
+  return`<div class="entry-card">
+    <div class="entry-icon">${TICON[e.type]||"📦"}</div>
+    <div class="entry-info">
+      <div class="ei-cat">${e.description||e.category}</div>
+      <div class="ei-meta">${[e.vendor,e.date,SLABEL[e.status]].filter(Boolean).join(" · ")}</div>
+    </div>
+    <div class="entry-amt">${fmt(isP?e.paidAmt:e.amount)}${bal}</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+//  BUDGET TAB
+// ══════════════════════════════════════════════
+function renderBudgetTab(){
+  const{spent,bankTotal}=calcTotals();
+  const est=settings.estimatedBudget||0;
+  const gap=est-bankTotal;
+  const g=id=>document.getElementById(id);
+  g("b-total").textContent=fmt(bankTotal);
+  g("b-spent").textContent=fmt(spent);
+  g("b-avail").textContent=fmt(bankTotal-spent);
+  g("b-est").textContent=fmt(est);
+  const gapEl=g("b-gap");
+  gapEl.textContent=(gap>0?`⚠️ Need ${fmt(gap)} more funds`:gap<0?`✅ Funds exceed estimate by ${fmt(-gap)}`:"✅ Exact match");
+  gapEl.className="bsb-val "+(gap>0?"red":gap<0?"green":"green");
+  g("bank-list").innerHTML=banks.length?banks.map(b=>{
+    const sp=calcBankSpent(b.name);
+    const avail=b.amount-sp;
+    const pct=b.amount?Math.min(sp/b.amount*100,100):0;
+    return`<div class="bank-card">
+      <div class="bank-card-head">
+        <span class="bank-card-name">${b.name}</span>
+        <span class="bank-card-type">${b.type}</span>
+      </div>
+      ${b.bank?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">🏦 ${b.bank}</div>`:""}
+      <div class="bank-total">${fmt(b.amount)}</div>
+      <div class="bank-used">Spent: ${fmt(sp)}</div>
+      <div class="bank-avail">Available: ${fmt(avail)}</div>
+      <div class="progress-bar" style="margin-top:8px;height:5px;"><div class="progress-fill" style="width:${pct.toFixed(1)}%"></div></div>
+      ${b.notes?`<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">📝 ${b.notes}</div>`:""}
+      ${(b.transactions||[]).length?`<div class="btxn-log">
+        <div class="btxn-log-title">Transaction History</div>
+        ${[...(b.transactions||[])].reverse().slice(0,5).map(t=>`<div class="btxn-row">
+          <div class="btxn-left">${t.type==="add"?"➕":"🔀"} ${t.date||""} · ${t.by||""} ${t.source?" · "+t.source:""} ${t.note?" · "+t.note:""}</div>
+          <div class="btxn-right ${t.type==="add"?"cadd":t.dir==="out"?"cout":"cin"}">${t.type==="add"?"+":t.dir==="out"?"↗":"↙"} ${fmt(t.amount)}</div>
+        </div>`).join("")}
+      </div>`:""}
+      <div class="bank-actions">
+        <button class="btn-sm" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);color:var(--green);border:1px solid #A5D6A7;font-weight:600;" onclick="openBankOp('${b.id}')">💰 Update</button>
+        <button class="btn-sm btn-edit" onclick="editBank('${b.id}')">✏️ Edit</button>
+        ${CU.role==="owner"?`<button class="btn-sm btn-delete" onclick="deleteBank('${b.id}')">🗑 Delete</button>`:""}
+      </div>
+    </div>`;
+  }).join(""):`<div class="empty"><div class="ei">💳</div><p>No accounts yet.<br/>Tap "+ Add Account" to add your bank or cash.</p></div>`;
+}
+function openBankModal(id){
+  document.getElementById("bank-modal-title").textContent=id?"Edit Account":"Add Account";
+  document.getElementById("ba-id").value=id||"";
+  if(id){
+    const b=banks.find(x=>x.id===id);
+    if(b){document.getElementById("ba-name").value=b.name;document.getElementById("ba-type").value=b.type;document.getElementById("ba-amount").value=b.amount;document.getElementById("ba-bank").value=b.bank||"";document.getElementById("ba-notes").value=b.notes||"";}
+  }else{
+    ["ba-name","ba-bank","ba-notes"].forEach(x=>document.getElementById(x).value="");
+    document.getElementById("ba-amount").value="";
+    document.getElementById("ba-type").value="Savings Account";
+  }
+  document.getElementById("modal-bank").classList.add("open");
+}
+function editBank(id){openBankModal(id);}
+async function saveBankAccount(){
+  const id=document.getElementById("ba-id").value;
+  const name=document.getElementById("ba-name").value.trim();
+  const type=document.getElementById("ba-type").value;
+  const amount=parseFloat(document.getElementById("ba-amount").value)||0;
+  const bank=document.getElementById("ba-bank").value.trim();
+  const notes=document.getElementById("ba-notes").value.trim();
+  if(!name||!amount){toast("⚠️ Account name and amount required");return;}
+  const data={name,type,amount,bank,notes};
+  if(id){
+    if(DEMO){const i=DS.banks.findIndex(b=>b.id===id);if(i>=0)DS.banks[i]={...DS.banks[i],...data};banks=DS.banks.map(b=>({...b}));}
+    else try{await db.collection("banks").doc(id).update(data);}catch(e){toast("❌ Failed");return;}
+    const i=banks.findIndex(b=>b.id===id);if(i>=0)banks[i]={...banks[i],...data};
+    toast("✅ Account updated");
+  }else{
+    const nb={id:"b"+Date.now(),...data};
+    if(DEMO){DS.banks.push(nb);banks=DS.banks.map(b=>({...b}));}
+    else try{const ref=await db.collection("banks").add(data);nb.id=ref.id;banks.push(nb);}catch(e){toast("❌ Failed");return;}
+    toast("✅ Account added");
+  }
+  closeModal("modal-bank");
+  populateSelectDropdowns();
+  renderBudgetTab();renderDashboard();
+}
+async function deleteBank(id){
+  if(!confirm("Delete this account?"))return;
+  if(DEMO){DS.banks=DS.banks.filter(b=>b.id!==id);banks=DS.banks.map(b=>({...b}));}
+  else try{await db.collection("banks").doc(id).delete();banks=banks.filter(b=>b.id!==id);}catch(e){toast("❌ Failed");return;}
+  toast("🗑 Account removed");populateSelectDropdowns();renderBudgetTab();renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+//  POPULATE DROPDOWNS
+// ══════════════════════════════════════════════
+function populateSelectDropdowns(){
+  // Spent-by / paid-by
+  const memberOpts=['<option value="">Select member…</option>',...members.map(m=>`<option>${m.name}</option>`)].join("");
+  ["f-spentby","pn-paidby"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=memberOpts;});
+  if(CU&&document.getElementById("f-spentby"))document.getElementById("f-spentby").value=CU.name;
+  if(CU&&document.getElementById("pn-paidby"))document.getElementById("pn-paidby").value=CU.name;
+  // Bank accounts
+  const bankOpts=['<option value="">Select account…</option>',...banks.map(b=>`<option>${b.name}</option>`)].join("");
+  ["f-bankaccount","pn-bankaccount"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=bankOpts;});
+}
+
+// ══════════════════════════════════════════════
+//  QUICK NAV
+// ══════════════════════════════════════════════
+function quickNav(filter){
+  currentFilter=filter;
+  document.querySelectorAll(".filter-chip").forEach(c=>c.classList.toggle("active",c.dataset.filter===filter));
+  showTab("list",document.getElementById("nav-list"));
+  renderEntries();
+}
+
+// ══════════════════════════════════════════════
+//  ENTRIES LIST
+// ══════════════════════════════════════════════
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");
+  const lbls={all:"All Entries",material:"🧱 Materials",labour:"👷 Labour",other:"📦 Other",pending:"⏳ Pending",partial:"🔸 Partial",today:"📅 Today"};
+  document.getElementById("list-subtitle").textContent=lbls[f]||"";
+  renderEntries();
+}
+function filterEntries(){
+  const today=new Date().toISOString().slice(0,10);
+  if(currentFilter==="pending")return allEntries.filter(e=>e.status==="pending");
+  if(currentFilter==="partial")return allEntries.filter(e=>e.status==="partial");
+  if(currentFilter==="today")  return allEntries.filter(e=>e.date===today);
+  if(currentFilter==="all")    return allEntries;
+  return allEntries.filter(e=>e.type===currentFilter);
+}
+function renderEntries(){
+  const list=filterEntries();
+  const el=document.getElementById("entries-list");
+  if(!list.length){el.innerHTML="<div class='empty'><div class='ei'>📋</div><p>No entries for this filter</p></div>";return;}
+  el.innerHTML=list.map(e=>{
+    const isP=e.status==="partial",isPend=e.status==="pending";
+    const partInfo=isP?`<div class="mc-partial">💰 Paid: ${fmt(e.paidAmt)} &nbsp;|&nbsp; 🔴 Balance: ${fmt(e.balanceAmt)}</div>`:"";
+    const pendInfo=isPend?`<div class="mc-partial">🔴 Full Amount Due: ${fmt(e.amount)}</div>`:"";
+    // Payment trail
+    const trail=(e.payments||[]).length?`<div class="mc-payment-trail">
+      <div class="pt-title">Payment History</div>
+      ${(e.payments||[]).map(p=>`<div class="pt-row">✅ ${fmt(p.amt)} — ${p.date||""} — ${p.paidBy||""} via ${p.txnType||""} (${p.bank||""})${p.note?" · "+p.note:""}</div>`).join("")}
+    </div>`:"";
+    const metaParts=[
+      e.vendor?"🏪 "+e.vendor:"",e.qty?"📦 "+e.qty:"",e.date?"📅 "+e.date:"",
+      SLABEL[e.status]||"","Added by "+e.addedBy,
+      e.spentBy?"Handled by "+e.spentBy:"",
+      e.txnType?"via "+e.txnType:"",e.bankAccount?"🏦 "+e.bankAccount:"",
+      e.notes?"📝 "+e.notes:""
+    ].filter(Boolean);
+    const showPayNow=(isP||isPend);
+    return`<div class="material-card">
+      <div class="mc-header"><span class="mc-name">${e.description||e.category}</span>
+        <span class="mc-type">${e.type}</span></div>
+      <div class="mc-amount">${isP?`${fmt(e.amount)} <span style="font-size:10px;color:var(--text-muted)">(total)</span>`:fmt(e.amount)}</div>
+      ${partInfo}${pendInfo}
+      <div class="mc-meta">${metaParts.slice(0,4).join(" · ")}<br/>${metaParts.slice(4).join(" · ")}</div>
+      ${trail}
+      <div class="mc-actions">
+        <button class="btn-sm btn-edit" onclick="startEdit('${e.id}')">✏️ Edit</button>
+        ${showPayNow?`<button class="btn-sm btn-paynow" onclick="openPayNow('${e.id}')">💰 Pay Now</button>`:""}
+        ${CU.role==="owner"?`<button class="btn-sm btn-delete" onclick="deleteEntry('${e.id}')">🗑 Del</button>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ══════════════════════════════════════════════
+//  PAY NOW
+// ══════════════════════════════════════════════
+function openPayNow(id){
+  const e=allEntries.find(x=>x.id===id);if(!e)return;
+  document.getElementById("pn-entry-id").value=id;
+  const balance=e.status==="pending"?e.amount:(e.balanceAmt||0);
+  document.getElementById("paynow-entry-summary").innerHTML=
+    `<b>${e.description||e.category}</b><br/>
+     Total: ${fmt(e.amount)} · Already Paid: ${fmt(e.paidAmt||0)} · <b style="color:var(--crimson-lt)">Balance Due: ${fmt(balance)}</b>`;
+  document.getElementById("pn-amount").value=balance||"";
+  document.getElementById("pn-date").value=new Date().toISOString().slice(0,10);
+  document.getElementById("pn-notes").value="";
+  populateSelectDropdowns();
+  if(CU)document.getElementById("pn-paidby").value=CU.name;
+  document.getElementById("paynow-result").textContent="";
+  updatePayNowSummary();
+  document.getElementById("modal-paynow").classList.add("open");
+}
+function updatePayNowSummary(){
+  const id=document.getElementById("pn-entry-id").value;
+  const e=allEntries.find(x=>x.id===id);if(!e)return;
+  const paying=parseFloat(document.getElementById("pn-amount").value)||0;
+  const balance=e.status==="pending"?e.amount:(e.balanceAmt||0);
+  const newBal=Math.max(0,balance-paying);
+  const newStatus=newBal===0?"paid":"partial";
+  document.getElementById("paynow-result").textContent=
+    paying?`After this payment: Balance = ${fmt(newBal)} → Status will be "${newStatus==="paid"?"✅ Fully Paid":"🔸 Still Partial"}"` :"";
+}
+async function confirmPayNow(){
+  const id=document.getElementById("pn-entry-id").value;
+  const e=allEntries.find(x=>x.id===id);if(!e)return;
+  const paying=parseFloat(document.getElementById("pn-amount").value)||0;
+  const paidBy=document.getElementById("pn-paidby").value;
+  const txnType=document.getElementById("pn-txntype").value;
+  const bank=document.getElementById("pn-bankaccount").value;
+  const date=document.getElementById("pn-date").value;
+  const note=document.getElementById("pn-notes").value.trim();
+  if(!paying){toast("⚠️ Enter payment amount");return;}
+  if(!paidBy){toast("⚠️ Select who paid");return;}
+  const balance=e.status==="pending"?e.amount:(e.balanceAmt||0);
+  const newPaid=(e.paidAmt||0)+paying;
+  const newBal=Math.max(0,balance-paying);
+  const newStatus=newBal===0?"paid":"partial";
+  const payRecord={amt:paying,date,paidBy,txnType,bank,note};
+  const updatedPayments=[...(e.payments||[]),payRecord];
+  const data={paidAmt:newPaid,balanceAmt:newBal,status:newStatus,payments:updatedPayments,
+    ...(newStatus==="paid"?{spentBy:paidBy,txnType,bankAccount:bank}:{})};
+  if(DEMO){const i=DS.entries.findIndex(x=>x.id===id);if(i>=0)DS.entries[i]={...DS.entries[i],...data};allEntries=DS.entries.map(x=>({...x,payments:x.payments||[]}));}
+  else try{await db.collection("entries").doc(id).update(data);}catch(err){toast("❌ Failed: "+err.message);return;}
+  const i=allEntries.findIndex(x=>x.id===id);if(i>=0)allEntries[i]={...allEntries[i],...data};
+  closeModal("modal-paynow");
+  toast(`✅ Payment of ${fmt(paying)} recorded!`);
+  renderEntries();renderDashboard();renderBudgetTab();
+}
+
+// ══════════════════════════════════════════════
+//  ADD / EDIT FORM
+// ══════════════════════════════════════════════
+function setType(t){
+  currentType=t;
+  document.querySelectorAll(".type-tab").forEach(el=>el.classList.toggle("active",el.dataset.type===t));
+  const sel=document.getElementById("f-cat");
+  sel.innerHTML='<option value="">Select category…</option>'+(CATEGORIES[t]||[]).map(c=>`<option>${c}</option>`).join("");
+}
+function togglePartial(){
+  const v=document.getElementById("f-status").value;
+  document.getElementById("partial-fields").classList.toggle("show",v==="partial");
+  updatePartialBalance();
+}
+function updatePartialBalance(){
+  const total=parseFloat(document.getElementById("f-amount").value)||0;
+  const paid=parseFloat(document.getElementById("f-paid").value)||0;
+  const bal=Math.max(0,total-paid);
+  document.getElementById("f-balance").value=bal||"";
+  document.getElementById("partial-balance").textContent=total&&paid?`🔴 Balance remaining: ${fmt(bal)}`:"";
+}
+function startEdit(id){
+  const e=allEntries.find(x=>x.id===id);if(!e)return;
+  editingId=id;
+  showTab("add",document.getElementById("nav-add"));
+  document.getElementById("add-page-title").textContent="Edit Entry";
+  document.getElementById("btn-save-entry").textContent="💾 Update Entry";
+  document.getElementById("btn-cancel-edit").style.display="block";
+  setType(e.type);
+  document.getElementById("f-desc").value=e.description||"";
+  document.getElementById("f-cat").value=e.category||"";
+  document.getElementById("f-amount").value=e.amount||"";
+  document.getElementById("f-vendor").value=e.vendor||"";
+  document.getElementById("f-qty").value=e.qty||"";
+  document.getElementById("f-date").value=e.date||"";
+  document.getElementById("f-status").value=e.status||"paid";
+  document.getElementById("f-notes").value=e.notes||"";
+  document.getElementById("f-spentby").value=e.spentBy||CU.name;
+  document.getElementById("f-txntype").value=e.txnType||"";
+  document.getElementById("f-bankaccount").value=e.bankAccount||"";
+  if(e.status==="partial"){
+    document.getElementById("partial-fields").classList.add("show");
+    document.getElementById("f-paid").value=e.paidAmt||"";
+    updatePartialBalance();
+  }else document.getElementById("partial-fields").classList.remove("show");
+  toast("✏️ Edit mode — make changes and save");
+}
+function cancelEdit(){editingId=null;resetForm();showTab("list",document.getElementById("nav-list"));renderEntries();}
+function resetForm(){
+  editingId=null;
+  document.getElementById("add-page-title").textContent="Add Entry";
+  document.getElementById("btn-save-entry").textContent="🪔 Save Entry";
+  document.getElementById("btn-cancel-edit").style.display="none";
+  ["f-desc","f-vendor","f-qty","f-notes","f-paid","f-balance"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  document.getElementById("f-amount").value="";
+  document.getElementById("f-status").value="paid";
+  document.getElementById("f-date").value=new Date().toISOString().slice(0,10);
+  document.getElementById("partial-fields").classList.remove("show");
+  document.getElementById("partial-balance").textContent="";
+  document.getElementById("f-txntype").value="";
+  document.getElementById("f-bankaccount").value="";
+  if(CU)document.getElementById("f-spentby").value=CU.name;
+  setType("material");
+}
+// Smart bank filter based on txn type
+function smartFilterBankAccount(){
+  const txn=document.getElementById("f-txntype").value;
+  const sel=document.getElementById("f-bankaccount");
+  const isCash=txn==="Cash";
+  const isOnline=["PhonePe","Google Pay","Paytm","NEFT / IMPS","Net Banking","UPI","Cheque","DD"].includes(txn);
+  const prev=sel.value;
+  sel.innerHTML='<option value="">Select account…</option>'+banks.map(b=>{
+    const isCashAcct=b.type==="Cash In Hand"||b.name.toLowerCase().includes("cash");
+    if(isCash&&!isCashAcct)return''; // Cash txn: only cash accounts
+    if(isOnline&&isCashAcct)return''; // Online txn: no cash accounts
+    return`<option value="${b.name}">${b.name}</option>`;
+  }).join("");
+  if([...sel.options].some(o=>o.value===prev))sel.value=prev;
+}
+// Same filter for Pay Now modal
+function smartFilterPayNowBank(){
+  const txn=document.getElementById("pn-txntype").value;
+  const sel=document.getElementById("pn-bankaccount");
+  const isCash=txn==="Cash";
+  const isOnline=["PhonePe","Google Pay","Paytm","NEFT / IMPS","Net Banking","UPI","Cheque","DD"].includes(txn);
+  const prev=sel.value;
+  sel.innerHTML='<option value="">Select account…</option>'+banks.map(b=>{
+    const isCashAcct=b.type==="Cash In Hand"||b.name.toLowerCase().includes("cash");
+    if(isCash&&!isCashAcct)return'';
+    if(isOnline&&isCashAcct)return'';
+    return`<option value="${b.name}">${b.name}</option>`;
+  }).join("");
+  if([...sel.options].some(o=>o.value===prev))sel.value=prev;
+}
+function markError(id,msg){
+  const el=document.getElementById(id);
+  if(el){el.style.border="1.5px solid #E53935";el.style.background="#FFF5F5";}
+  toast("⚠️ "+msg);
+}
+function clearErrors(){
+  ["f-desc","f-cat","f-amount","f-vendor","f-qty","f-date","f-spentby","f-txntype","f-bankaccount","f-status","f-paid"].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.style.border="";el.style.background="";}
+  });
+}
+async function saveEntry(){
+  clearErrors();
+  const btn=document.getElementById("btn-save-entry");
+  const desc   =document.getElementById("f-desc").value.trim();
+  const cat    =document.getElementById("f-cat").value;
+  const amount =parseFloat(document.getElementById("f-amount").value)||0;
+  const vendor =document.getElementById("f-vendor").value.trim();
+  const qty    =document.getElementById("f-qty").value.trim();
+  const date   =document.getElementById("f-date").value;
+  const status =document.getElementById("f-status").value;
+  const notes  =document.getElementById("f-notes").value.trim();
+  const spentBy=document.getElementById("f-spentby").value;
+  const txnType=document.getElementById("f-txntype").value;
+  const bankAccount=document.getElementById("f-bankaccount").value;
+  // ── Mandatory field validation ──
+  if(!desc){markError("f-desc","Description is required");return;}
+  if(!cat){markError("f-cat","Select a category");return;}
+  if(!amount){markError("f-amount","Enter the total amount");return;}
+  if(!vendor){markError("f-vendor","Vendor / person name is required");return;}
+  if(!qty){markError("f-qty","Enter quantity or unit");return;}
+  if(!date){markError("f-date","Select a date");return;}
+  if(!spentBy){markError("f-spentby","Select who handled the payment");return;}
+  // Skip txnType & bankAccount for pending entries (not yet paid)
+  if(status!=="pending"){
+    if(!txnType){markError("f-txntype","Select transaction type");return;}
+    if(!bankAccount){markError("f-bankaccount","Select bank/account used");return;}
+    // ── Smart cross-field validation: Cash vs Online ──
+    const isCash=txnType==="Cash";
+    const isOnline=["PhonePe","Google Pay","Paytm","NEFT / IMPS","Net Banking","UPI","Cheque","DD"].includes(txnType);
+    const selBank=banks.find(b=>b.name===bankAccount);
+    const isCashAcct=selBank&&(selBank.type==="Cash In Hand"||selBank.name.toLowerCase().includes("cash"));
+    if(isCash&&selBank&&!isCashAcct){
+      markError("f-bankaccount","Cash payment must use Cash In Hand account");return;
+    }
+    if(isOnline&&isCashAcct){
+      markError("f-bankaccount","Online payment cannot use Cash In Hand — select a bank account");return;
+    }
+  }
+  let paidAmt=amount,balanceAmt=0;
+  if(status==="partial"){
+    paidAmt=parseFloat(document.getElementById("f-paid").value)||0;
+    balanceAmt=Math.max(0,amount-paidAmt);
+    if(!paidAmt){toast("⚠️ Enter amount paid for partial payment");return;}
+  }
+  if(status==="pending"){paidAmt=0;balanceAmt=amount;}
+  btn.disabled=true;btn.textContent="Saving…";
+  const data={type:currentType,category:cat,description:desc,amount,paidAmt,balanceAmt,vendor,qty,date,status,notes,spentBy,txnType,bankAccount,addedBy:CU.name};
+  if(editingId){
+    if(DEMO){const i=DS.entries.findIndex(e=>e.id===editingId);if(i>=0)DS.entries[i]={...DS.entries[i],...data};allEntries=DS.entries.map(x=>({...x,payments:x.payments||[]}));}
+    else try{await db.collection("entries").doc(editingId).update(data);}catch(e){toast("❌ Update failed");btn.disabled=false;btn.textContent="💾 Update Entry";return;}
+    const i=allEntries.findIndex(e=>e.id===editingId);if(i>=0)allEntries[i]={...allEntries[i],...data};
+    toast("✅ Entry updated!");editingId=null;resetForm();renderDashboard();
+    showTab("list",document.getElementById("nav-list"));renderEntries();
+  }else{
+    data.createdAt=DEMO?new Date():firebase.firestore.FieldValue.serverTimestamp();
+    data.payments=[];
+    if(status==="paid"||status==="partial"){
+      data.payments=[{amt:paidAmt,date,paidBy:spentBy,txnType,bank:bankAccount,note:notes}];
+    }
+    if(DEMO){data.id="e"+Date.now();DS.entries.unshift(data);allEntries=DS.entries.map(x=>({...x,payments:x.payments||[]}));}
+    else try{const ref=await db.collection("entries").add(data);data.id=ref.id;allEntries.unshift(data);}
+         catch(e){toast("❌ Save failed: "+e.message);btn.disabled=false;btn.textContent="🪔 Save Entry";return;}
+    toast("✅ Entry saved!");resetForm();renderDashboard();renderBudgetTab();
+  }
+  btn.disabled=false;btn.textContent=editingId?"💾 Update Entry":"🪔 Save Entry";
+}
+async function deleteEntry(id){
+  if(!confirm("Delete this entry?"))return;
+  if(CU.role!=="owner"){toast("❌ Only owners can delete");return;}
+  if(DEMO){DS.entries=DS.entries.filter(e=>e.id!==id);allEntries=DS.entries.map(x=>({...x,payments:x.payments||[]}));}
+  else try{await db.collection("entries").doc(id).delete();allEntries=allEntries.filter(e=>e.id!==id);}catch(e){toast("❌ Delete failed");return;}
+  toast("🗑 Deleted");renderEntries();renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+//  REPORTS
+// ══════════════════════════════════════════════
+function renderReports(){
+  const{spent,pendAmt,partBal,matAmt,labAmt}=calcTotals();
+  const othAmt=allEntries.reduce((s,e)=>{if(e.type!=="other")return s;return s+(e.status==="paid"?e.amount:e.status==="partial"?(e.paidAmt||0):0);},0);
+  const g=id=>document.getElementById(id);
+  g("r-total").textContent=fmt(spent);g("r-material").textContent=fmt(matAmt);
+  g("r-labour").textContent=fmt(labAmt);g("r-other").textContent=fmt(othAmt);
+  g("r-pending").textContent=fmt(pendAmt);g("r-balance").textContent=fmt(partBal);
+  // Category breakdown
+  const catMap={};
+  allEntries.forEach(e=>{const v=e.status==="paid"?e.amount:e.status==="partial"?(e.paidAmt||0):0;catMap[e.category]=(catMap[e.category]||0)+v;});
+  const sorted=Object.entries(catMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  g("cat-breakdown").innerHTML=sorted.map(([cat,amt])=>`
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-head"><span class="cat-bar-name">${cat}</span><span class="cat-bar-amt">${fmt(amt)}</span></div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(amt/max*100).toFixed(1)}%"></div></div>
+    </div>`).join("")||"<div class='empty'><div class='ei'>📊</div><p>No paid entries yet</p></div>";
+  // Bank breakdown
+  const bankMap={};
+  allEntries.forEach(e=>{
+    const key=e.bankAccount||"Unknown";
+    const v=e.status==="paid"?e.amount:e.status==="partial"?(e.paidAmt||0):0;
+    bankMap[key]=(bankMap[key]||0)+v;
+  });
+  const bSorted=Object.entries(bankMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const bMax=bSorted[0]?.[1]||1;
+  g("bank-breakdown").innerHTML=bSorted.map(([name,amt])=>`
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-head"><span class="cat-bar-name">🏦 ${name}</span><span class="cat-bar-amt">${fmt(amt)}</span></div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(amt/bMax*100).toFixed(1)}%;background:linear-gradient(90deg,var(--blue-lt),var(--blue));"></div></div>
+    </div>`).join("")||"<div style='color:var(--text-muted);font-size:13px;font-style:italic;padding:8px;'>No account data yet</div>";
+  // Member breakdown
+  const memMap={};
+  allEntries.forEach(e=>{
+    const key=e.spentBy||e.addedBy||"Unknown";
+    const v=e.status==="paid"?e.amount:e.status==="partial"?(e.paidAmt||0):0;
+    memMap[key]=(memMap[key]||0)+v;
+  });
+  const mSorted=Object.entries(memMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const mMax=mSorted[0]?.[1]||1;
+  g("member-breakdown").innerHTML=mSorted.map(([name,amt])=>`
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-head"><span class="cat-bar-name">👤 ${name}</span><span class="cat-bar-amt">${fmt(amt)}</span></div>
+      <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${(amt/mMax*100).toFixed(1)}%;background:linear-gradient(90deg,var(--crimson-lt),var(--saffron));"></div></div>
+    </div>`).join("")||"<div style='color:var(--text-muted);font-size:13px;font-style:italic;padding:8px;'>No member data yet</div>";
+}
+function buildCSV(entries){
+  const h=["Date","Type","Category","Description","Vendor","Qty","Total Amount","Paid Amount","Balance","Status","Spent By","Txn Type","Bank Account","Added By","Notes","Payment History"];
+  const rows=entries.map(e=>{
+    const trail=(e.payments||[]).map(p=>`${p.date}:${p.amt}:${p.paidBy}:${p.txnType}:${p.bank}`).join("|");
+    return[e.date||"",e.type||"",e.category||"",
+      `"${(e.description||"").replace(/"/g,'""')}"`,
+      `"${(e.vendor||"").replace(/"/g,'""')}"`,
+      e.qty||"",e.amount||0,e.status==="paid"?e.amount:(e.paidAmt||0),e.balanceAmt||0,
+      e.status||"",e.spentBy||"",e.txnType||"",e.bankAccount||"",e.addedBy||"",
+      `"${(e.notes||"").replace(/"/g,'""')}"`,`"${trail}"`];
+  });
+  return[h,...rows].map(r=>r.join(",")).join("\n");
+}
+function exportCSV(mode){
+  const list=mode==="all"?allEntries:filterEntries();
+  const label=mode==="all"?"all":currentFilter;
+  const a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(buildCSV(list));
+  a.download=`dream-house-${label}.csv`;a.click();
+  toast("📥 CSV downloaded");
+}
+
+// ══════════════════════════════════════════════
+//  MEMBERS
+// ══════════════════════════════════════════════
+function renderMembersSettings(){
+  document.getElementById("members-list").innerHTML=members.map(m=>`
+    <div class="member-card">
+      <div class="member-avatar">${m.name[0].toUpperCase()}</div>
+      <div class="member-info"><div class="member-name">${m.name}</div>
+        <span class="member-role ${m.role}">${m.role==="owner"?"👑 Owner":"👤 Member"}</span></div>
+      ${CU.role==="owner"&&m.id!==CU.id?`<button class="btn-sm btn-delete" style="width:auto;padding:5px 10px;" onclick="deleteMember('${m.id}')">Remove</button>`:""}
+    </div>`).join("")||"<div class='empty'><div class='ei'>👥</div><p>No members</p></div>";
+}
+function openAddMember(){
+  if(CU.role!=="owner"){toast("❌ Only owners can add members");return;}
+  document.getElementById("modal-member").classList.add("open");
+}
+async function saveMember(){
+  const name=document.getElementById("m-name").value.trim();
+  const role=document.getElementById("m-role").value;
+  const pin=String(document.getElementById("m-pin").value).trim();
+  if(!name||pin.length!==PIN_LEN){toast(`⚠️ Name and ${PIN_LEN}-digit PIN required`);return;}
+  const m={id:"m"+Date.now(),name,role,pin};
+  if(DEMO){DS.members.push(m);members=[...DS.members];}
+  else try{const ref=await db.collection("members").add({name,role,pin});m.id=ref.id;members.push(m);}catch(e){toast("❌ Failed");return;}
+  closeModal("modal-member");
+  document.getElementById("m-name").value="";document.getElementById("m-pin").value="";
+  toast("✅ Member added");
+  renderMembersSettings();
+  renderMemberPick(members);
+  populateSelectDropdowns();
+}
+async function deleteMember(id){
+  if(!confirm("Remove this member?"))return;
+  if(DEMO){DS.members=DS.members.filter(m=>m.id!==id);members=[...DS.members];}
+  else try{await db.collection("members").doc(id).delete();members=members.filter(m=>m.id!==id);}catch(e){toast("❌ Failed");return;}
+  toast("Member removed");renderMembersSettings();renderMemberPick(members);populateSelectDropdowns();
+}
+
+// ══════════════════════════════════════════════
+//  FIREBASE RULES
+// ══════════════════════════════════════════════
+const FIREBASE_RULES=`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: check if user is owner
+    function isOwner() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == "owner";
+    }
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Settings — owners full, members read only
+    match /settings/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner();
+    }
+
+    // Entries — members can add & update, only owner can delete
+    match /entries/{doc} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isOwner();
+    }
+
+    // Banks — owner full, members read
+    match /banks/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner();
+    }
+
+    // Members — owner full, self-read
+    match /members/{doc} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isOwner();
+    }
+  }
+}`;
+function copyRules(){
+  navigator.clipboard.writeText(FIREBASE_RULES).then(()=>toast("📋 Rules copied!")).catch(()=>toast("Copy manually from the text box"));
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION  (with tab persistence on refresh)
+// ══════════════════════════════════════════════
+function showTab(name,el){
+  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+  document.getElementById("tab-"+name).style.display="block";
+  el.classList.add("active");
+  sessionStorage.setItem("dh_tab",name);          // ← remember current tab
+  if(name==="list")    renderEntries();
+  if(name==="reports") renderReports();
+  if(name==="members") renderMembersSettings();
+  if(name==="budget")  renderBudgetTab();
+  if(name==="add"&&!editingId) resetForm();
+}
+function restoreTab(){
+  const saved=sessionStorage.getItem("dh_tab")||"dashboard";
+  const navEl=document.getElementById("nav-"+saved)||document.getElementById("nav-dashboard");
+  showTab(saved,navEl);
+}
+function closeModal(id){document.getElementById(id).classList.remove("open");}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function fmt(n){if(!n&&n!==0)return"₹0";return"₹"+Number(n).toLocaleString("en-IN");}
+let toastT;
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2800);
+}
+
+// ══════════════════════════════════════════════
+//  BANK UPDATE / TRANSFER OPERATIONS
+// ══════════════════════════════════════════════
+let currentBankOp="add";
+function setBankOp(op){
+  currentBankOp=op;
+  document.getElementById("bop-tab-add").classList.toggle("active",op==="add");
+  document.getElementById("bop-tab-transfer").classList.toggle("active",op==="transfer");
+  document.getElementById("bop-add-fields").style.display=op==="add"?"block":"none";
+  document.getElementById("bop-transfer-fields").style.display=op==="transfer"?"block":"none";
+  document.getElementById("bankop-result").textContent="";
+}
+function openBankOp(bankId){
+  const b=banks.find(x=>x.id===bankId);if(!b)return;
+  document.getElementById("bop-bank-id").value=bankId;
+  document.getElementById("bankop-title").textContent="Update: "+b.name;
+  const sp=calcBankSpent(b.name);
+  document.getElementById("bankop-info").innerHTML=
+    `<b>${b.name}</b> (${b.type})<br/>Total Allocated: <b>${fmt(b.amount)}</b> · Spent: <span style="color:var(--crimson-lt)">${fmt(sp)}</span> · Available: <span style="color:var(--green)">${fmt(b.amount-sp)}</span>`;
+  // Populate member dropdowns
+  const mOpts=members.map(m=>`<option>${m.name}</option>`).join("");
+  ["bop-add-by","bop-txfr-by"].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=mOpts;});
+  if(CU){document.getElementById("bop-add-by").value=CU.name;document.getElementById("bop-txfr-by").value=CU.name;}
+  // Populate from/to dropdowns for transfer
+  const bOpts=banks.map(b=>`<option value="${b.id}">${b.name}</option>`).join("");
+  document.getElementById("bop-from-bank").innerHTML='<option value="">Select…</option>'+bOpts;
+  document.getElementById("bop-to-bank").innerHTML='<option value="">Select…</option>'+bOpts;
+  document.getElementById("bop-from-bank").value=bankId;
+  // Set dates
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById("bop-add-date").value=today;
+  document.getElementById("bop-txfr-date").value=today;
+  // Clear fields
+  ["bop-add-amount","bop-add-source","bop-add-notes","bop-txfr-notes"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("bop-txfr-amount").value="";
+  document.getElementById("bankop-result").textContent="";
+  setBankOp("add");
+  document.getElementById("modal-bankop").classList.add("open");
+}
+async function confirmBankOp(){
+  const bankId=document.getElementById("bop-bank-id").value;
+  const b=banks.find(x=>x.id===bankId);if(!b)return;
+  if(currentBankOp==="add"){
+    const amount=parseFloat(document.getElementById("bop-add-amount").value)||0;
+    const date=document.getElementById("bop-add-date").value;
+    const by=document.getElementById("bop-add-by").value;
+    const source=document.getElementById("bop-add-source").value.trim();
+    const note=document.getElementById("bop-add-notes").value.trim();
+    if(!amount){toast("⚠️ Enter amount to add");return;}
+    if(!date){toast("⚠️ Select date");return;}
+    if(!by){toast("⚠️ Select who added the funds");return;}
+    const txn={type:"add",amount,date,by,source,note,recordedAt:new Date().toISOString()};
+    const newAmount=b.amount+amount;
+    const updTxns=[...(b.transactions||[]),txn];
+    const data={amount:newAmount,transactions:updTxns};
+    if(DEMO){const i=DS.banks.findIndex(x=>x.id===bankId);if(i>=0)DS.banks[i]={...DS.banks[i],...data};banks=DS.banks.map(x=>({...x}));}
+    else try{await db.collection("banks").doc(bankId).update(data);}catch(e){toast("❌ Failed: "+e.message);return;}
+    banks[banks.findIndex(x=>x.id===bankId)]={...b,...data};
+    document.getElementById("bankop-result").textContent=`✅ Added ${fmt(amount)}. New balance: ${fmt(newAmount)}`;
+    toast(`✅ ${fmt(amount)} added to ${b.name}`);
+  } else {
+    // TRANSFER
+    const fromId=document.getElementById("bop-from-bank").value;
+    const toId=document.getElementById("bop-to-bank").value;
+    const amount=parseFloat(document.getElementById("bop-txfr-amount").value)||0;
+    const date=document.getElementById("bop-txfr-date").value;
+    const by=document.getElementById("bop-txfr-by").value;
+    const note=document.getElementById("bop-txfr-notes").value.trim();
+    if(!fromId){toast("⚠️ Select source account");return;}
+    if(!toId){toast("⚠️ Select destination account");return;}
+    if(fromId===toId){toast("⚠️ Source and destination must be different");return;}
+    if(!amount){toast("⚠️ Enter transfer amount");return;}
+    if(!date){toast("⚠️ Select date");return;}
+    if(!by){toast("⚠️ Select who transferred");return;}
+    const fromBank=banks.find(x=>x.id===fromId);
+    const toBank=banks.find(x=>x.id===toId);
+    if(!fromBank||!toBank){toast("❌ Account not found");return;}
+    const txnOut={type:"transfer",dir:"out",amount,date,by,to:toBank.name,note,recordedAt:new Date().toISOString()};
+    const txnIn={type:"transfer",dir:"in",amount,date,by,from:fromBank.name,note,recordedAt:new Date().toISOString()};
+    const newFromAmt=fromBank.amount-amount;
+    const newToAmt=toBank.amount+amount;
+    const updFrom={amount:newFromAmt,transactions:[...(fromBank.transactions||[]),txnOut]};
+    const updTo={amount:newToAmt,transactions:[...(toBank.transactions||[]),txnIn]};
+    if(DEMO){
+      const fi=DS.banks.findIndex(x=>x.id===fromId);if(fi>=0)DS.banks[fi]={...DS.banks[fi],...updFrom};
+      const ti=DS.banks.findIndex(x=>x.id===toId);if(ti>=0)DS.banks[ti]={...DS.banks[ti],...updTo};
+      banks=DS.banks.map(x=>({...x}));
+    } else {
+      try{
+        await db.collection("banks").doc(fromId).update(updFrom);
+        await db.collection("banks").doc(toId).update(updTo);
+      }catch(e){toast("❌ Transfer failed: "+e.message);return;}
+      const fi=banks.findIndex(x=>x.id===fromId);if(fi>=0)banks[fi]={...fromBank,...updFrom};
+      const ti=banks.findIndex(x=>x.id===toId);if(ti>=0)banks[ti]={...toBank,...updTo};
+    }
+    document.getElementById("bankop-result").textContent=`✅ Transferred ${fmt(amount)} from ${fromBank.name} → ${toBank.name}`;
+    toast(`✅ Transferred ${fmt(amount)}`);
+  }
+  renderBudgetTab();renderDashboard();
+  setTimeout(()=>closeModal("modal-bankop"),1200);
+}
+function exportBankTxnCSV(){
+  const rows=[["Account","Transaction Type","Direction","Amount","Date","By","Source / From / To","Notes"]];
+  banks.forEach(b=>{
+    (b.transactions||[]).forEach(t=>{
+      rows.push([
+        b.name,
+        t.type==="add"?"Add Funds":"Transfer",
+        t.dir||"in",
+        t.amount||0,
+        t.date||"",
+        t.by||"",
+        t.source||t.from||t.to||"",
+        t.note||""
+      ]);
+    });
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,\uFEFF"+encodeURIComponent(csv);
+  a.download="dream-house-bank-transactions.csv";a.click();
+  toast("📥 Bank transactions CSV downloaded");
+}
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+(async function(){
+  // Always load members for login screen
+  await loadMembers();
+  renderMemberPick(members);
+  // Check session
+  const saved=sessionStorage.getItem("dh_user");
+  if(saved){CU=JSON.parse(saved);enterApp();}
+})();
+</script>
+</body>
+</html>
