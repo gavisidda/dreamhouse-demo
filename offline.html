@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dream House – Offline</title>
+<style>
+  body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;background:#2C1A0E;color:#FDF6E8;font-family:'Crimson Pro',Georgia,serif;
+       text-align:center;padding:24px;}
+  .icon{font-size:64px;margin-bottom:16px;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+  h1{font-size:22px;color:#F0C040;letter-spacing:2px;margin-bottom:8px;}
+  p{color:#E8CFA0;font-size:16px;margin-bottom:24px;line-height:1.6;}
+  button{background:linear-gradient(135deg,#E8680A,#B22222);border:none;
+         border-radius:10px;color:white;padding:13px 28px;font-size:15px;
+         cursor:pointer;letter-spacing:1px;}
+</style>
+</head>
+<body>
+  <div class="icon">🏠</div>
+  <h1>YOU ARE OFFLINE</h1>
+  <p>Dream House needs a connection to<br/>sync your construction data.<br/>Your local data is safe.</p>
+  <button onclick="location.reload()">🔄 Try Again</button>
+</body>
+</html>

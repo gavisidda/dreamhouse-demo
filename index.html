@@ -2,7 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Dream House"/>
+<meta name="application-name" content="Dream House"/>
+<meta name="theme-color" content="#2C1A0E" media="(prefers-color-scheme: dark)"/>
+<meta name="theme-color" content="#2C1A0E"/>
+<meta name="msapplication-TileColor" content="#2C1A0E"/>
+<meta name="msapplication-TileImage" content="icons/icon-144.png"/>
+<meta name="msapplication-tap-highlight" content="no"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta name="description" content="Family construction budget tracker – bank accounts, expenses, progress tracking"/>
+<!-- Open Graph -->
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Dream House – Hatti Construction Tracker"/>
+<meta property="og:description" content="Track your house construction budget, expenses, and progress"/>
+<meta property="og:image" content="icons/icon-512.png"/>
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json"/>
+<!-- Apple Touch Icons -->
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png"/>
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png"/>
+<link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png"/>
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"/>
+<link rel="icon" type="image/png" sizes="96x96"   href="icons/icon-96.png"/>
+<link rel="shortcut icon" href="icons/icon-96.png"/>
+<!-- Apple Splash Screens (covers common iPhone/iPad sizes) -->
+<link rel="apple-touch-startup-image" href="icons/icon-512.png"/>
 <title>Dream House 🏠 – Hatti Construction Tracker</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -19,6 +49,104 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--ivory);color:var(--text);font-family:'Crimson Pro',serif;font-size:19px;min-height:100vh;overflow-x:hidden;}
+/* ── PWA safe-area & status bar ── */
+:root{
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+/* Install prompt banner */
+#pwa-install-banner{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:1100;
+  background:linear-gradient(135deg,var(--mahogany),#1A0A04);
+  border-top:2px solid var(--gold);
+  padding:12px 16px calc(12px + var(--sab));
+  flex-direction:column;gap:8px;
+  box-shadow:0 -4px 20px rgba(44,26,14,.5);
+}
+#pwa-install-banner.show{display:flex;}
+.pwa-banner-row{display:flex;align-items:center;gap:12px;}
+.pwa-banner-icon{width:44px;height:44px;border-radius:10px;flex-shrink:0;}
+.pwa-banner-text{flex:1;}
+.pwa-banner-title{font-family:'Cinzel',serif;color:var(--gold-lt);font-size:14px;}
+.pwa-banner-sub{color:var(--border-lt);font-size:12px;margin-top:2px;}
+.pwa-banner-btns{display:flex;gap:8px;}
+.pwa-install-btn{flex:1;padding:10px;background:linear-gradient(135deg,var(--saffron),var(--crimson-lt));
+  border:none;border-radius:9px;color:white;font-family:'Cinzel',serif;
+  font-size:13px;cursor:pointer;letter-spacing:1px;}
+.pwa-dismiss-btn{padding:10px 14px;background:rgba(253,246,232,.1);
+  border:1px solid rgba(212,169,106,.3);border-radius:9px;color:var(--text-muted);
+  font-size:13px;cursor:pointer;}
+/* Update available bar */
+#pwa-update-bar{
+  display:none;position:fixed;top:6px;left:0;right:0;z-index:1050;
+  background:#1565C0;padding:10px 16px;
+  flex-direction:row;align-items:center;justify-content:space-between;gap:10px;
+}
+#pwa-update-bar.show{display:flex;}
+.pwa-update-text{color:white;font-size:13px;}
+.pwa-update-btn{background:white;color:#1565C0;border:none;border-radius:6px;
+  padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;}
+/* Offline indicator */
+#pwa-offline-bar{
+  display:none;position:fixed;top:6px;left:0;right:0;z-index:1050;
+  background:#E53935;padding:8px 16px;
+  align-items:center;justify-content:center;gap:8px;
+}
+#pwa-offline-bar.show{display:flex;}
+.pwa-offline-text{color:white;font-size:13px;font-weight:600;}
+/* Splash / loading screen */
+#pwa-splash{
+  display:flex;position:fixed;inset:0;z-index:2000;
+  background:radial-gradient(ellipse at 50% 30%,#3D2515,#1A0A04);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .5s ease;
+}
+#pwa-splash.hide{opacity:0;pointer-events:none;}
+.splash-icon{width:96px;height:96px;border-radius:22px;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.splash-title{font-family:'Cinzel',serif;color:var(--gold-lt);font-size:24px;letter-spacing:3px;}
+.splash-sub{color:var(--border-lt);font-size:14px;font-style:italic;}
+.splash-spinner{
+  width:36px;height:36px;border:3px solid rgba(212,169,106,.2);
+  border-top-color:var(--gold-lt);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* Notification permission button */
+#notif-btn{
+  width:100%;padding:11px;background:linear-gradient(135deg,#1565C0,#0D47A1);
+  border:none;border-radius:10px;color:white;font-family:'Cinzel',serif;
+  font-size:13px;cursor:pointer;margin-top:6px;letter-spacing:1px;
+}
+/* Bottom nav safe area */
+.bottom-nav{padding-bottom:max(env(safe-area-inset-bottom,0px),8px);}
+/* Page top padding accounts for status bar on standalone */
+@media all and (display-mode: standalone){
+  body::before{ top: env(safe-area-inset-top,0px); }
+  .topbar{ top: calc(6px + env(safe-area-inset-top,0px)); }
+  .page{ padding-top: calc(72px + env(safe-area-inset-top,0px)); }
+}
+/* Hide scrollbar on standalone */
+@media all and (display-mode: standalone){
+  ::-webkit-scrollbar{display:none;}
+  html{overflow:-moz-scrollbars-none;}
+}
+/* Touch feedback */
+.stat-card,.material-card,.bank-card,.entry-card,.btn-primary,.btn-secondary,.nav-item,.pin-btn{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+/* Ripple effect on buttons */
+.btn-primary,.btn-green,.nav-item,.pin-btn,.type-tab{
+  position:relative;overflow:hidden;
+}
+.btn-primary::after,.btn-green::after,.pin-btn::after{
+  content:'';position:absolute;inset:0;background:rgba(255,255,255,.15);
+  opacity:0;transition:opacity .2s;border-radius:inherit;
+}
+.btn-primary:active::after,.btn-green:active::after,.pin-btn:active::after{opacity:1;}
+
 body::before{content:'';display:block;height:6px;background:repeating-linear-gradient(90deg,var(--saffron) 0,var(--saffron) 16px,var(--gold) 16px,var(--gold) 32px,var(--crimson) 32px,var(--crimson) 48px,var(--gold) 48px,var(--gold) 64px);position:fixed;top:0;left:0;right:0;z-index:999;}
 
 /* ── LOGIN ── */
@@ -264,6 +392,40 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
 </head>
 <body>
 
+<!-- ── PWA Splash Screen ── -->
+<div id="pwa-splash">
+  <img src="icons/icon-192.png" class="splash-icon" alt="Dream House"/>
+  <div class="splash-title">DREAM HOUSE</div>
+  <div class="splash-sub">Hatti Construction Tracker</div>
+  <div class="splash-spinner"></div>
+</div>
+
+<!-- ── Offline Bar ── -->
+<div id="pwa-offline-bar">
+  <span class="pwa-offline-text">📡 You are offline — data will sync when connected</span>
+</div>
+
+<!-- ── Update Available Bar ── -->
+<div id="pwa-update-bar">
+  <span class="pwa-update-text">🆕 New version available!</span>
+  <button class="pwa-update-btn" onclick="applyUpdate()">Update Now</button>
+</div>
+
+<!-- ── Install Banner ── -->
+<div id="pwa-install-banner">
+  <div class="pwa-banner-row">
+    <img src="icons/icon-96.png" class="pwa-banner-icon" alt="icon"/>
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Install Dream House</div>
+      <div class="pwa-banner-sub">Add to home screen for the full app experience</div>
+    </div>
+  </div>
+  <div class="pwa-banner-btns">
+    <button class="pwa-install-btn" onclick="installPWA()">📲 Install App</button>
+    <button class="pwa-dismiss-btn" onclick="dismissInstall()">Not Now</button>
+  </div>
+</div>
+
 <!-- ═══════ LOGIN ═══════ -->
 <div id="screen-login">
   <div class="login-temple">
@@ -415,7 +577,7 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
           <input type="text" id="f-qty" placeholder="e.g. 50 bags"/></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Spent By</label>
+        <div class="form-group"><label>Spent By (Who handled)</label>
           <select id="f-spentby"></select></div>
         <div class="form-group"><label>Transaction Type</label>
           <select id="f-txntype" onchange="smartFilterBankAccount()">
@@ -529,6 +691,17 @@ body::before{content:'';display:block;height:6px;background:repeating-linear-gra
     <div class="form-card">
       <div id="phases-settings"></div>
       <button class="btn-primary" style="margin-top:8px" onclick="savePhases()">💾 Save Phases</button>
+    </div>
+    <div class="divider"><span>✦</span></div>
+    <div class="section-head">📱 App & Notifications</div>
+    <div class="form-card" style="margin-bottom:12px;">
+      <div style="font-size:14px;color:var(--text-mid);margin-bottom:10px;">Enable notifications to get reminders about pending payments and construction milestones.</div>
+      <button id="notif-btn" onclick="requestNotifPermission()">🔔 Enable Notifications</button>
+      <div id="notif-status" style="font-size:12px;color:var(--text-muted);margin-top:8px;"></div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:10px;">App version: <span id="pwa-version">—</span></div>
+      <div id="pwa-install-settings-btn" style="display:none;margin-top:8px;">
+        <button class="btn-secondary" onclick="installPWA()" style="margin-top:0;">📲 Install App on Device</button>
+      </div>
     </div>
     <div class="divider"><span>✦</span></div>
     <div class="section-head">🔐 Firebase Security Rules</div>
@@ -929,7 +1102,7 @@ function renderDashboard(){
   const{spent,pendAmt,partBal,matAmt,labAmt,todayAmt,bankTotal}=calcTotals();
   const est=settings.estimatedBudget||0;
   const g=id=>document.getElementById(id);
-  g("dash-greeting").textContent=`Welcome, ${CU.name}! 🏠  ${settings.projectName||"Dream House"}`;
+  g("dash-greeting").textContent=`Welcome, ${CU.name}! 🙏  ${settings.projectName||"Dream House"}`;
   g("dash-budget").textContent=fmt(bankTotal);
   g("dash-spent").textContent=fmt(spent);
   g("dash-remain").textContent=fmt(bankTotal-spent);
@@ -1790,15 +1963,283 @@ function exportBankTxnCSV(){
 }
 
 // ══════════════════════════════════════════════
+//  PWA — Service Worker, Install, Offline, Notifications
+// ══════════════════════════════════════════════
+let deferredInstallPrompt = null;
+let swRegistration = null;
+const SW_VERSION = 'dream-house-v1.2';
+
+// ── Register Service Worker ──
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+    console.log('[PWA] SW registered:', swRegistration.scope);
+
+    // Check for updates
+    swRegistration.addEventListener('updatefound', () => {
+      const newWorker = swRegistration.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          document.getElementById('pwa-update-bar').classList.add('show');
+        }
+      });
+    });
+
+    // Get version from SW
+    if (navigator.serviceWorker.controller) {
+      const ch = new MessageChannel();
+      ch.port1.onmessage = e => {
+        const vEl = document.getElementById('pwa-version');
+        if (vEl) vEl.textContent = e.data.version || SW_VERSION;
+      };
+      navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' }, [ch.port2]);
+    }
+
+    // Listen for messages from SW
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data?.type === 'SYNC_ENTRIES') loadEntries().then(renderDashboard);
+      if (e.data?.type === 'DAILY_SUMMARY') checkPendingPayments();
+    });
+
+  } catch (err) {
+    console.warn('[PWA] SW registration failed:', err);
+  }
+}
+
+function applyUpdate() {
+  if (swRegistration?.waiting) {
+    swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+  }
+  window.location.reload();
+}
+
+// ── Install Prompt ──
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Show banner only if not already installed and not dismissed recently
+  const dismissed = localStorage.getItem('dh-install-dismissed');
+  if (!dismissed || Date.now() - parseInt(dismissed) > 7 * 86400000) {
+    document.getElementById('pwa-install-banner').classList.add('show');
+    const sb = document.getElementById('pwa-install-settings-btn');
+    if (sb) sb.style.display = 'block';
+  }
+});
+
+async function installPWA() {
+  if (!deferredInstallPrompt) { toast('Open in Chrome/Edge to install'); return; }
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('pwa-install-banner').classList.remove('show');
+  if (outcome === 'accepted') {
+    toast('🎉 Dream House installed! Find it on your home screen.');
+    vibrateDevice([100, 50, 100]);
+  }
+}
+
+function dismissInstall() {
+  localStorage.setItem('dh-install-dismissed', Date.now().toString());
+  document.getElementById('pwa-install-banner').classList.remove('show');
+}
+
+window.addEventListener('appinstalled', () => {
+  toast('✅ App installed successfully!');
+  document.getElementById('pwa-install-banner').classList.remove('show');
+  deferredInstallPrompt = null;
+});
+
+// ── Online / Offline ──
+function updateOnlineStatus() {
+  const bar = document.getElementById('pwa-offline-bar');
+  if (!navigator.onLine) {
+    bar.classList.add('show');
+    toast('📡 You are offline');
+  } else {
+    bar.classList.remove('show');
+    if (document.visibilityState === 'visible') {
+      // Re-sync when back online
+      if (CU && !DEMO) loadEntries().then(renderDashboard).catch(()=>{});
+    }
+  }
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// ── Notifications ──
+async function requestNotifPermission() {
+  const statusEl = document.getElementById('notif-status');
+  const btn = document.getElementById('notif-btn');
+  if (!('Notification' in window)) {
+    if (statusEl) statusEl.textContent = '❌ Notifications not supported on this browser';
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    if (statusEl) statusEl.textContent = '✅ Notifications already enabled';
+    if (btn) btn.textContent = '✅ Notifications Enabled';
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    if (statusEl) statusEl.textContent = '✅ Notifications enabled!';
+    if (btn) { btn.textContent = '✅ Notifications Enabled'; btn.style.background = 'linear-gradient(135deg,var(--green-lt),var(--green))'; }
+    toast('🔔 Notifications enabled!');
+    // Send a test notification
+    setTimeout(() => {
+      if (swRegistration) {
+        swRegistration.showNotification('Dream House 🏠', {
+          body: 'Notifications are working! You will be reminded about pending payments.',
+          icon: './icons/icon-192.png',
+          badge: './icons/icon-72.png',
+          vibrate: [200, 100, 200],
+          tag: 'dh-welcome'
+        });
+      }
+    }, 1000);
+  } else {
+    if (statusEl) statusEl.textContent = '⚠️ Permission denied. Enable in browser settings.';
+  }
+}
+
+// ── Check and notify pending payments ──
+function checkPendingPayments() {
+  if (Notification.permission !== 'granted') return;
+  if (!swRegistration) return;
+  const pending = allEntries.filter(e => e.status === 'pending' || e.status === 'partial');
+  if (pending.length > 0) {
+    const totalDue = pending.reduce((s,e) => s + (e.status==='pending'?e.amount:(e.balanceAmt||0)), 0);
+    swRegistration.showNotification('Dream House – Payment Reminder 🔸', {
+      body: `${pending.length} payment(s) pending. Total due: ${fmt(totalDue)}`,
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-72.png',
+      tag: 'dh-pending',
+      vibrate: [100, 50, 100],
+      data: { url: './index.html?tab=list&filter=pending' },
+      actions: [
+        { action: 'open', title: '📋 View Entries' },
+        { action: 'dismiss', title: 'Later' }
+      ]
+    });
+  }
+}
+
+// ── Vibration helper ──
+function vibrateDevice(pattern) {
+  if ('vibrate' in navigator) navigator.vibrate(pattern);
+}
+
+// ── URL param → tab routing (for PWA shortcuts) ──
+function handleURLParams() {
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get('tab');
+  const filter = params.get('filter');
+  if (tab) {
+    const navEl = document.getElementById('nav-' + tab);
+    if (navEl) {
+      if (filter) currentFilter = filter;
+      showTab(tab, navEl);
+    }
+  }
+}
+
+// ── Splash hide ──
+function hideSplash() {
+  const splash = document.getElementById('pwa-splash');
+  if (splash) {
+    setTimeout(() => {
+      splash.classList.add('hide');
+      setTimeout(() => splash.remove(), 500);
+    }, 800);
+  }
+}
+
+// ── Share API ──
+async function shareApp() {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Dream House – Construction Tracker',
+        text: 'Track your house construction budget with Dream House app!',
+        url: window.location.href
+      });
+    } catch(e) { if (e.name !== 'AbortError') toast('Sharing not available'); }
+  } else {
+    // Fallback: copy URL
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast('🔗 Link copied to clipboard!');
+    } catch(e) { toast('Share not available'); }
+  }
+}
+
+// ── Periodic reminder (every 24h while app is open) ──
+setInterval(() => {
+  if (CU && allEntries.length) checkPendingPayments();
+}, 24 * 60 * 60 * 1000);
+
+// ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
 (async function(){
+  // Register service worker (non-blocking)
+  registerSW();
+
+  // Handle URL params for shortcuts
+  const params = new URLSearchParams(window.location.search);
+  const startTab = params.get('tab');
+
   // Always load members for login screen
   await loadMembers();
   renderMemberPick(members);
+
   // Check session
-  const saved=sessionStorage.getItem("dh_user");
-  if(saved){CU=JSON.parse(saved);enterApp();}
+  const saved = sessionStorage.getItem("dh_user");
+  if (saved) {
+    CU = JSON.parse(saved);
+    await enterApp();
+    // Route to shortcut tab after login
+    if (startTab) {
+      const navEl = document.getElementById('nav-' + startTab);
+      if (navEl) { const f = params.get('filter'); if(f) currentFilter=f; showTab(startTab, navEl); }
+    }
+  }
+
+  // Check online status
+  updateOnlineStatus();
+
+  // Notification permission status
+  const notifBtn = document.getElementById('notif-btn');
+  const notifStatus = document.getElementById('notif-status');
+  if (Notification.permission === 'granted') {
+    if (notifBtn) { notifBtn.textContent = '✅ Notifications Enabled'; notifBtn.style.background = 'linear-gradient(135deg,var(--green-lt),var(--green))'; }
+    if (notifStatus) notifStatus.textContent = '✅ Enabled';
+  } else if (Notification.permission === 'denied') {
+    if (notifStatus) notifStatus.textContent = '⚠️ Blocked in browser settings';
+  }
+
+  // Hide splash
+  hideSplash();
+
+  // Schedule daily payment check at 9 AM
+  const now = new Date();
+  const next9am = new Date(now); next9am.setHours(9,0,0,0);
+  if (next9am <= now) next9am.setDate(next9am.getDate() + 1);
+  setTimeout(() => {
+    if (CU) checkPendingPayments();
+    setInterval(() => { if (CU) checkPendingPayments(); }, 24*60*60*1000);
+  }, next9am - now);
+
+  // Register periodic background sync if supported
+  if (swRegistration && 'periodicSync' in swRegistration) {
+    try {
+      await swRegistration.periodicSync.register('daily-summary', { minInterval: 24 * 60 * 60 * 1000 });
+    } catch(e) { /* not supported */ }
+  }
+
+  // Version display
+  const vEl = document.getElementById('pwa-version');
+  if (vEl && !navigator.serviceWorker?.controller) vEl.textContent = SW_VERSION;
 })();
 </script>
 </body>
