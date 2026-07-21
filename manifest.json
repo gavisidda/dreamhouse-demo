@@ -1,6 +1,6 @@
 {
   "name": "Dream House – Hatti Construction Tracker",
-  "short_name": "Dream House",
+  "short_name": "House",
   "description": "Family construction budget tracker with bank accounts, expense entries, and progress tracking",
   "start_url": "/dream-house/index.html",
   "scope": "/dream-house/",
